@@ -19,11 +19,14 @@ pi() {
 		command pi "$@"
 		return
 	fi
-	local session esc_args
-	session="pi-$(basename "$PWD" | tr -c 'a-zA-Z0-9_' '-')"
-	if tmux has-session -t "$session" 2>/dev/null; then
-		exec tmux attach -t "$session"
-	fi
+	local base session esc_args n
+	base="pi-$(basename "$PWD" | tr -c 'a-zA-Z0-9_' '-')"
+	session="$base"
+	n=2
+	while tmux has-session -t "$session" 2>/dev/null; do
+		session="$base-$n"
+		n=$((n + 1))
+	done
 	printf -v esc_args '%q ' "$@"
-	exec tmux new-session -s "$session" "command pi $esc_args"
+	tmux new-session -s "$session" "command pi $esc_args"
 }

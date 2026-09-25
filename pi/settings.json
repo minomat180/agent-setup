@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.84.3",
+  "lastChangelogVersion": "0.87.1",
   "theme": "arcoiris-refined",
   "defaultProvider": "anthropic",
   "defaultModel": "claude-sonnet-5",
@@ -18,6 +18,10 @@
     "../../projects/pi-vault",
     "npm:pi-image-paste",
     "../../projects/ipod-vault/pi-extension",
-    "npm:pi-agent-browser-native"
+    "npm:pi-agent-browser-native",
+    "../../projects/pi-session-control",
+    "../../projects/pi-local-delegate",
+    "npm:pi-lens",
+    "npm:pi-mcp-adapter"
   ]
 }

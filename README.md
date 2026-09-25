@@ -16,6 +16,17 @@ coding-agent setup on a new machine.
   interactive invocations always run inside a per-project tmux session
   (needed for `pi-codrive`'s `/spawn` subagent feature), while passing
   through non-interactive/print-mode calls untouched. Append into `.bashrc`.
+  Each interactive launch gets its own uniquely-named session (`-2`, `-3`, …
+  on collision) so a second terminal starts a fresh, independent Pi instead
+  of mirroring into the first, and it deliberately avoids `exec` so that
+  exiting Pi with Ctrl+D drops back to a shell prompt rather than closing
+  the terminal.
+- `shell/bashrc-pi-agent-browser-env.sh` — caps inline screenshot attachments
+  from the `agent_browser` tool
+  (`PI_AGENT_BROWSER_INLINE_IMAGE_MAX_BYTES`). Screenshots are the largest
+  avoidable context cost; above the bound the capture still saves to disk
+  with full metadata and only the base64 attachment is skipped. Append into
+  `.bashrc`.
 
 ## What's deliberately excluded
 
@@ -55,6 +66,10 @@ if you also clone those):
 | `npm:@gotgenes/pi-anthropic-auth` | npm | Anthropic auth helper |
 | `npm:pi-image-paste` | npm | paste images into chat |
 | `npm:pi-agent-browser-native` | npm | browser automation tool (needs a Chrome/Chromium binary on the target machine) |
+| `npm:pi-lens` | npm | real-time LSP / linter / formatter / type-check feedback |
+| `npm:pi-mcp-adapter` | npm | MCP client adapter — lets Pi talk to MCP servers |
+| `../../projects/pi-session-control` | local repo | lets the agent switch its own model tier and compact its own context |
+| `../../projects/pi-local-delegate` | local repo | offloads cheap subtasks to a local Ollama box over the network |
 | `../../projects/pi-terminal-kit/packages/pi-codrive` | local repo | tmux subagent spawning (`/spawn`) — clone `pi-terminal-kit` as a sibling of this repo's parent, or drop from settings if unwanted |
 | `../../projects/pi-terminal-kit/packages/pi-arcoiris-refined` | local repo | color theme — same repo as above |
 | `../../projects/pi-vault` | local repo | Secret Service (`secret-tool`/gnome-keyring) backed vault tool — needs `libsecret`/`gnome-keyring` on target machine |
@@ -68,10 +83,15 @@ npm ones will keep working fine on their own.
 
 ```bash
 cat shell/bashrc-pi-tmux-wrapper.sh >> ~/.bashrc
+cat shell/bashrc-pi-agent-browser-env.sh >> ~/.bashrc
 ```
 
 Requires `tmux` installed if you want the per-project session behavior;
 falls back to running `pi` directly if `tmux` isn't present.
+
+The second file is independent of tmux — it only sets the `agent_browser`
+inline-image bound, and is worth adding on any machine that uses the browser
+tool.
 
 ## Does this work on Debian?
 
