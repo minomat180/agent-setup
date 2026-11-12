@@ -1,125 +1,97 @@
 # pi-dotfiles
 
-Config to recreate my [Pi](https://github.com/earendil-works/pi-mono) CLI
-coding-agent setup on a new machine.
+Config to recreate my [Pi](https://github.com/earendil-works/pi-mono) coding-agent
+setup on a new machine. Last synced with the live setup on 2026-11-12.
+
+## How the setup is organised
+
+The main lesson from three months of use: the global `AGENTS.md` must stay
+short. It is sent with every request of every session and every subagent, so
+everything in it is paid for constantly, and a long file gets followed worse,
+not better. Mine had grown to 757 lines (20k prompt tokens per request); it is
+now about 160 lines (under 10k tokens including Pi's own system prompt).
+
+The layout that replaced it (progressive disclosure):
+
+| Piece | Loaded | Holds |
+|---|---|---|
+| `~/.pi/agent/AGENTS.md` (symlink to `~/vault/AGENTS.md`) | every session | hard rules plus a one-line-per-topic index of notes |
+| `~/vault/` notes (`machine/`, `tools/`, `projects/`, `lessons.md`, `open-threads.md`) | only when a task touches the topic | the details: how things are set up, why rules exist, unfinished work |
+| `~/.pi/agent/skills/*/SKILL.md` | name and description at startup, body on demand | procedures with a clear trigger (browser, delegation, slides, mail) |
+| `<project>/AGENTS.md` | sessions started in that project | project rules; can point at project memory kept in the repo (git-excluded) |
+
+`~/vault` is plain markdown; Obsidian is only the viewer.
 
 ## What's here
 
-- `pi/settings.json` — Pi settings: model defaults, theme, installed
-  extensions. Drop into `~/.pi/agent/settings.json`.
-- `pi/AGENTS.md.example` — my *current machine's* global context file (Void
-  Linux / ThinkPad T480 / mango compositor specifics). This is **not
-  portable as-is** — it's an example of the format and level of detail to
-  aim for, not something to copy verbatim onto a different machine. Write a
-  fresh one for the new box (see "Writing your own AGENTS.md" below).
-- `shell/bashrc-pi-tmux-wrapper.sh` — a bash function that wraps `pi` so
-  interactive invocations always run inside a per-project tmux session
-  (needed for `pi-codrive`'s `/spawn` subagent feature), while passing
-  through non-interactive/print-mode calls untouched. Append into `.bashrc`.
-  Each interactive launch gets its own uniquely-named session (`-2`, `-3`, …
-  on collision) so a second terminal starts a fresh, independent Pi instead
-  of mirroring into the first, and it deliberately avoids `exec` so that
-  exiting Pi with Ctrl+D drops back to a shell prompt rather than closing
-  the terminal.
-- `shell/bashrc-pi-agent-browser-env.sh` — caps inline screenshot attachments
-  from the `agent_browser` tool
-  (`PI_AGENT_BROWSER_INLINE_IMAGE_MAX_BYTES`). Screenshots are the largest
-  avoidable context cost; above the bound the capture still saves to disk
-  with full metadata and only the base64 attachment is skipped. Append into
-  `.bashrc`.
+- `pi/settings.json`: Pi settings (model defaults, theme, packages). Drop into
+  `~/.pi/agent/settings.json`.
+- `pi/AGENTS.md.example`: my current global context file. It is specific to
+  this machine (Void Linux, ThinkPad T480, mango compositor); copy the shape,
+  not the facts.
+- `vault/Home.md.example`: the vault's front page, describing the note layout
+  and conventions.
+- `skills/delegation/SKILL.md`: rules for spawning subagents (model choice, the
+  report contract every child must end with, lifecycle, verifying reports).
+  Install to `~/.pi/agent/skills/delegation/`.
+- `shell/bashrc-pi-tmux-wrapper.sh`: a bash function that wraps `pi` so
+  interactive runs always start inside their own tmux session (needed for
+  `pi-codrive`'s subagent panes); print-mode calls pass through untouched.
+  Each launch gets a unique session name, and it avoids `exec` so leaving Pi
+  drops back to a shell. Append to `.bashrc`.
 
 ## What's deliberately excluded
 
-- `~/.pi/agent/auth.json` — live provider credentials. Never committed.
-  Recreate via `pi` login flows (`/login` in-session, or provider env vars /
-  API keys).
-- `~/.pi/agent/models-store.json` — cached model catalog, regenerates
-  automatically on first run / `pi update`.
+- `~/.pi/agent/auth.json` (live provider credentials). Log in again with `/login`.
+- `~/.pi/agent/models-store.json` (model cache, regenerates).
+- The vault notes themselves and project memory: they describe one machine and
+  contain account details.
 
-## Install (any Linux, incl. Debian)
+## Install
 
-Requires Node.js (v20+) and npm.
+Requires Node.js 20+ and npm.
 
 ```bash
 npm install -g @earendil-works/pi-coding-agent
-mkdir -p ~/.pi/agent
+mkdir -p ~/.pi/agent ~/vault
 cp pi/settings.json ~/.pi/agent/settings.json
-```
-
-Write your own `~/.pi/agent/AGENTS.md` (see below), then log in to at least
-one model provider:
-
-```bash
-pi            # first run offers /login, or:
-pi auth       # check/print credential status
-```
-
-### Extensions referenced in settings.json
-
-`settings.json`'s `packages` list mixes npm packages (portable, install
-automatically) and local path references to my other repos (only relevant
-if you also clone those):
-
-| package | type | notes |
-|---|---|---|
-| `npm:@hk_net/pi-usage-bars` | npm | usage/quota footer bar |
-| `npm:@gotgenes/pi-anthropic-auth` | npm | Anthropic auth helper |
-| `npm:pi-image-paste` | npm | paste images into chat |
-| `npm:pi-agent-browser-native` | npm | browser automation tool (needs a Chrome/Chromium binary on the target machine) |
-| `npm:pi-lens` | npm | real-time LSP / linter / formatter / type-check feedback |
-| `npm:pi-mcp-adapter` | npm | MCP client adapter — lets Pi talk to MCP servers |
-| `../../projects/pi-session-control` | local repo | lets the agent switch its own model tier and compact its own context |
-| `../../projects/pi-local-delegate` | local repo | offloads cheap subtasks to a local Ollama box over the network |
-| `../../projects/pi-terminal-kit/packages/pi-codrive` | local repo | tmux subagent spawning (`/spawn`) — clone `pi-terminal-kit` as a sibling of this repo's parent, or drop from settings if unwanted |
-| `../../projects/pi-terminal-kit/packages/pi-arcoiris-refined` | local repo | color theme — same repo as above |
-| `../../projects/pi-vault` | local repo | Secret Service (`secret-tool`/gnome-keyring) backed vault tool — needs `libsecret`/`gnome-keyring` on target machine |
-| `../../projects/ipod-vault/pi-extension` | local repo | vault tied to a physical iPod I own — almost certainly **drop this one** on a new machine unless you also have that hardware |
-
-If you don't want to bring over the local-path extensions, just delete
-those entries from `packages` in `settings.json` before copying it in — the
-npm ones will keep working fine on their own.
-
-### Shell wrapper
-
-```bash
+cp -r skills/* ~/.pi/agent/skills/
+# write ~/vault/AGENTS.md for the new machine, then:
+ln -s ~/vault/AGENTS.md ~/.pi/agent/AGENTS.md
 cat shell/bashrc-pi-tmux-wrapper.sh >> ~/.bashrc
-cat shell/bashrc-pi-agent-browser-env.sh >> ~/.bashrc
 ```
 
-Requires `tmux` installed if you want the per-project session behavior;
-falls back to running `pi` directly if `tmux` isn't present.
+## Packages in settings.json
 
-The second file is independent of tmux — it only sets the `agent_browser`
-inline-image bound, and is worth adding on any machine that uses the browser
-tool.
+Paths are relative to `~/.pi/agent`, so `../../Projects/x` is `~/Projects/x`.
+Drop any local entry you do not clone; the npm ones work on their own.
 
-## Does this work on Debian?
+| package | type | what |
+|---|---|---|
+| `npm:@hk_net/pi-usage-bars` | npm | usage and quota footer |
+| `npm:@gotgenes/pi-anthropic-auth` | npm | Anthropic subscription auth |
+| `npm:pi-image-paste` | npm | paste images into the chat |
+| `npm:pi-mcp-adapter` | npm | MCP client (servers installed on demand); the built-in `mcp` extension is disabled in favour of it |
+| `../../Projects/pi-session-control` | local repo | lets the agent switch its model and compact its own context; auto-compacts at 180k tokens or 82% of the window |
+| `../../Projects/pi-local-delegate` | local repo | hands cheap subtasks to a local Ollama box |
+| `../../Projects/pi-terminal-kit/packages/pi-codrive` | local repo | subagents in tmux panes (`spawn_agent`) |
+| `../../Projects/pi-terminal-kit/packages/pi-arcoiris-refined` | local repo | colour theme |
+| `../../Projects/pi-vault` | local repo | secrets from the Secret Service keyring (`secret-tool`), injected into one command without the model seeing them |
+| `../../Projects/ipod-vault/pi-extension` | local repo | the same for a password vault on a physical iPod; drop it without that hardware |
+| `../../Projects/capri-desktop/linux/pi-extension` | local repo | desktop overlay showing what the agent is doing |
 
-Yes, with the caveats above:
+Removed since the last sync: `pi-agent-browser-native` (replaced by `pib`,
+below) and `pi-lens`.
 
-- **Pi itself**: yes, it's a plain npm-installed Node CLI — no Void/Arch
-  specific packaging involved.
-- **`pi-vault`**: yes, as long as `gnome-keyring` (or another Secret
-  Service provider) and `libsecret-tools` (`secret-tool`) are installed —
-  `apt install gnome-keyring libsecret-tools` on Debian.
-- **`pi-agent-browser-native`**: yes, needs a real Chrome/Chromium binary
-  reachable on the target machine; my "headless-but-headful via `cage`"
-  background-mode trick is a Wayland/mango-specific detail documented in
-  `AGENTS.md.example`, not required for the extension to work at all — a
-  normal visible browser window is fine on Debian if you don't need that.
-- **`AGENTS.md.example`**: no — it's this specific machine's memory (Void
-  Linux, mango, acpid lid handling, greetd, etc.). Write a new one for the
-  new machine describing *its* OS/DE/hardware quirks instead of copying
-  this file.
-- **`ipod-vault`**: no, it's tied to a specific physical iPod — skip it
-  unless recreating that exact hardware setup.
+## Browser
 
-## Writing your own AGENTS.md
+The agent drives a real, logged-in Chrome through `pib`, a small CDP command-line
+tool with a Pi skill (`~/Projects/pib`, not published yet). It replaced the
+`agent_browser` tool, which launched a detectable headless Chrome and failed
+9% of its calls. `pib-chrome start` (run from the compositor's autostart)
+keeps one Chrome on `127.0.0.1:9222`; each Pi session works in its own tab.
 
-Keep it terse and factual — it's injected into every single message of
-every session forever (unlike conversation history, it's never
-summarized/compacted), so verbosity there is a permanent token tax. Good
-contents: OS/DE facts that would otherwise need rediscovering every
-session, hard rules (e.g. browser-use guardrails), and a running "small
-projects & tools registry" of scripts/configs on that machine. See
-`pi/AGENTS.md.example` for the shape, not the specific facts.
+## Models
+
+`claude-opus-5-5` for everyday work, in sessions and subagents alike;
+`claude-fable-5-2` only for special tasks with high impact on the project.
