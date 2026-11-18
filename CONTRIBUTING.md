@@ -1,10 +1,12 @@
 # Contributing
 
-This is my personal dotfiles repo for recreating my Pi CLI setup on a new
-machine — not maintained as a general-purpose open source project. Issues and
-PRs are welcome, but may sit unaddressed.
+This repo describes one person's agent setup (a NixOS server and a Mac sharing
+a markdown vault, with pi, Claude Code and T3 Code). It is not maintained as a
+general-purpose project. Issues and PRs are welcome but may sit unaddressed.
 
-If you fork it: `pi/AGENTS.md.example` documents *my* machine's specifics
-(Void Linux, ThinkPad T480, mango compositor). It's meant as a template for
-the level of detail to write, not something to use verbatim on a different
-box. Write your own.
+If you fork it: `shared/AGENTS.md` and the machine notes describe mino's
+machines and rules. Copy the structure (short global file, vault notes,
+per-project pointers, skills on demand), not the facts.
+
+Before a PR: run `scripts/scan-secrets.sh`; it must report clean. No emojis in
+files or commit messages.

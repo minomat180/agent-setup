@@ -43,7 +43,7 @@ mid-way through changing.
 
 Always give the subagent explicit **hard constraints**: what not to touch, what
 not to kill, which git state to leave alone, which paths are off-limits
-(`nvme0n1p2`, the mango process, mino's daily Firefox/Chrome, the agent browser's lifecycle). Subagents don't
+(networking, Tailscale and sshd on the server, mino's daily browsers, the agent browser's lifecycle). Subagents don't
 inherit the current session's context — restate the relevant background,
 absolute paths, and the machine facts they'll need.
 

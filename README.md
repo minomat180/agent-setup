@@ -1,97 +1,154 @@
-# pi-dotfiles
+# pi-dotfiles: mino's agent setup
 
-Config to recreate my [Pi](https://github.com/earendil-works/pi-mono) coding-agent
-setup on a new machine. Last synced with the live setup on 2026-11-12.
+Everything needed to rebuild mino's coding-agent setup across his two machines:
+a headless NixOS home server and an Apple Silicon Mac, sharing one markdown
+vault as the agents' memory, with [pi](https://github.com/earendil-works/pi-mono),
+Claude Code and T3 Code on top. Last synced with the live setup on 2026-11-18.
 
-## How the setup is organised
+This is a sanitized copy, not the live config: nothing loads from this repo.
+Secrets, auth files, hostnames and addresses are left out or replaced by
+placeholders like `<mac-tailnet-ip>`.
 
-The main lesson from three months of use: the global `AGENTS.md` must stay
-short. It is sent with every request of every session and every subagent, so
-everything in it is paid for constantly, and a long file gets followed worse,
-not better. Mine had grown to 757 lines (20k prompt tokens per request); it is
-now about 160 lines (under 10k tokens including Pi's own system prompt).
+## Architecture
 
-The layout that replaced it (progressive disclosure):
+```
+                      GitHub  (every push comes from the server)
+                         ^
+                         | git push
++------------------------+--------------+          +------------------------------+
+| minomatNix: server                    |          | Mac: main machine            |
+| NixOS, headless, user `<user>`          |          | macOS, zsh, Homebrew         |
+|                                       |          |                              |
+| ~/Projects/vault-notes (git repo)     |Syncthing | ~/vault (copy, no .git)      |
+| ~/vault -> ~/Projects/vault-notes     |<-------->| opened in Obsidian           |
+|                                       |Tailscale |                              |
+| t3code (T3 Code server)               |          | T3 Code desktop app          |
+| pib-chrome (agent Chrome)             |   T3     | pib-chrome (agent Chrome)    |
+| gnome-keyring (pi-vault secrets)      |  linked  | keychain + Touch ID secrets  |
+| syncthing, tailscaled                 |<-------->| Capri overlay                |
+|                                       |  env.    |                              |
+| pi, Claude Code                       |          | pi, Claude Code              |
++---------------------------------------+          +------------------------------+
+```
+
+How an agent gets its context, on either machine:
 
 | Piece | Loaded | Holds |
 |---|---|---|
-| `~/.pi/agent/AGENTS.md` (symlink to `~/vault/AGENTS.md`) | every session | hard rules plus a one-line-per-topic index of notes |
-| `~/vault/` notes (`machine/`, `tools/`, `projects/`, `lessons.md`, `open-threads.md`) | only when a task touches the topic | the details: how things are set up, why rules exist, unfinished work |
-| `~/.pi/agent/skills/*/SKILL.md` | name and description at startup, body on demand | procedures with a clear trigger (browser, delegation, slides, mail) |
-| `<project>/AGENTS.md` | sessions started in that project | project rules; can point at project memory kept in the repo (git-excluded) |
+| `~/vault/AGENTS.md`, linked as `~/.pi/agent/AGENTS.md` and `~/.claude/CLAUDE.md` | every session and subagent | the rules, the two machines, a one-line-per-topic index of notes |
+| `<repo>/AGENTS.md` (+ `CLAUDE.md` = `@AGENTS.md`), git-excluded | sessions started in that repo | a pointer to the project's note in `~/vault/projects/` |
+| `~/vault/` notes: `projects/`, `machine/`, `tools/`, `lessons.md`, `open-threads.md` | when a task touches the topic | the details: state per machine, how to re-check it, decisions, history |
+| skills in `~/.pi/agent/skills/`, `~/.claude/skills/` | name and description at startup, body on demand | procedures with a clear trigger (browser, secrets, delegation, documents) |
 
-`~/vault` is plain markdown; Obsidian is only the viewer.
+The global file stays short because it is paid for on every request of every
+session and subagent; everything else is progressive disclosure. `~/Projects`
+exists on both machines as separate copies; work moves between them only
+through git.
 
-## What's here
+## What is here
 
-- `pi/settings.json`: Pi settings (model defaults, theme, packages). Drop into
-  `~/.pi/agent/settings.json`.
-- `pi/AGENTS.md.example`: my current global context file. It is specific to
-  this machine (Void Linux, ThinkPad T480, mango compositor); copy the shape,
-  not the facts.
-- `vault/Home.md.example`: the vault's front page, describing the note layout
-  and conventions.
-- `skills/delegation/SKILL.md`: rules for spawning subagents (model choice, the
-  report contract every child must end with, lifecycle, verifying reports).
-  Install to `~/.pi/agent/skills/delegation/`.
-- `shell/bashrc-pi-tmux-wrapper.sh`: a bash function that wraps `pi` so
-  interactive runs always start inside their own tmux session (needed for
-  `pi-codrive`'s subagent panes); print-mode calls pass through untouched.
-  Each launch gets a unique session name, and it avoids `exec` so leaving Pi
-  drops back to a shell. Append to `.bashrc`.
+| Path | What |
+|---|---|
+| `shared/AGENTS.md` | Sanitized copy of `~/vault/AGENTS.md`, the one global instruction file. |
+| `vault/` | Vault skeleton: `Home.md`, `projects/index.md` (status board), note templates for projects and machines, `lessons.md`, `open-threads.md`. |
+| `pi/settings.minomatnix.json`, `pi/settings.mac.json` | Pi settings per machine (model, theme, packages). |
+| `pi/mcp-adapter.json` | MCP servers for `pi-mcp-adapter` (Context7 docs). |
+| `claude/` | Claude Code settings per machine, and which skills sit where (`claude/README.md`). |
+| `skills/` | Skills written for this setup (`delegation`, `vault`, `frontend-taste`); third-party skills listed with their source in `skills/README.md`. |
+| `nixos/agents.nix` | The agent-relevant part of the server's NixOS config as an importable module. |
+| `mac/README.md` | Mac bootstrap and the `~/.local/bin` tool list. |
+| `shell/bashrc-pi-tmux-wrapper.sh` | `pi` wrapper: interactive runs start in their own tmux session (needed by pi-codrive subagent panes). |
+| `scripts/link-agents.sh` | Links `~/.pi/agent/AGENTS.md` and `~/.claude/CLAUDE.md` to `~/vault/AGENTS.md`. |
+| `scripts/project-pointers.sh` | Writes the git-excluded `AGENTS.md` + `CLAUDE.md` pointer into every repo in `~/Projects` that has a vault note. |
+| `scripts/scan-secrets.sh` | Pre-push scan for keys, tokens, tailnet names, Tailscale IPs, device IDs, emails. |
 
-## What's deliberately excluded
+Not here, on purpose: `~/.pi/agent/auth.json`, `models-store.json`,
+`~/.claude/.credentials.json`, the vault notes themselves (they describe real
+accounts and hold project findings), Syncthing device IDs and tailnet details.
 
-- `~/.pi/agent/auth.json` (live provider credentials). Log in again with `/login`.
-- `~/.pi/agent/models-store.json` (model cache, regenerates).
-- The vault notes themselves and project memory: they describe one machine and
-  contain account details.
+## Install and restore
 
-## Install
+### Server (NixOS)
 
-Requires Node.js 20+ and npm.
+1. Base system with Tailscale and sshd working first; never lose those, the box
+   is headless. Copy `nixos/agents.nix` to `/etc/nixos/`, add it to `imports`,
+   fill the placeholders in its `let` block, commit `/etc/nixos`, then
+   `sudo nixos-rebuild switch`. `sudo tailscale up --ssh` once.
+2. Agents (npm prefix `~/.local`, on `PATH`):
+   ```bash
+   npm config set prefix ~/.local
+   npm install -g @earendil-works/pi-coding-agent
+   # Claude Code: from nixpkgs (in agents.nix) or its native installer
+   ```
+   T3 Code: install its server and let it write `~/.config/systemd/user/t3code.service`;
+   `agents.nix` adds `t3-project-sync`, which registers every `~/Projects` folder.
+3. The vault: clone the private vault repo to `~/Projects/vault-notes`, then
+   `ln -s ~/Projects/vault-notes ~/vault`. (New vault: copy `vault/` and
+   `shared/AGENTS.md` from here into it.)
+4. Config from this repo:
+   ```bash
+   scripts/link-agents.sh
+   cp pi/settings.minomatnix.json ~/.pi/agent/settings.json
+   cp pi/mcp-adapter.json ~/.pi/agent/mcp-adapter.json   # optional
+   cp claude/settings.minomatnix.json ~/.claude/settings.json
+   mkdir -p ~/.pi/agent/skills && cp -r skills/delegation ~/.pi/agent/skills/
+   cat shell/bashrc-pi-tmux-wrapper.sh >> ~/.bashrc
+   ```
+5. Clone the local packages that `settings.json` points at into `~/Projects`
+   (table below) and pib (its `bin/` linked into `~/.local/bin`), then
+   `scripts/project-pointers.sh`.
+6. Log in: `pi`, then `/login`; `claude`; `gh auth login`. pi-vault secrets:
+   `secret-tool store --label='pi-vault: NAME' service pi-vault account NAME`.
+7. Check: `systemctl --user is-active t3code pib-chrome; systemctl is-active syncthing tailscaled`.
 
-```bash
-npm install -g @earendil-works/pi-coding-agent
-mkdir -p ~/.pi/agent ~/vault
-cp pi/settings.json ~/.pi/agent/settings.json
-cp -r skills/* ~/.pi/agent/skills/
-# write ~/vault/AGENTS.md for the new machine, then:
-ln -s ~/vault/AGENTS.md ~/.pi/agent/AGENTS.md
-cat shell/bashrc-pi-tmux-wrapper.sh >> ~/.bashrc
-```
+### Mac
 
-## Packages in settings.json
+See `mac/README.md`: Homebrew, Syncthing pairing for `~/vault`, the
+`~/.local/bin` tools, then the same `scripts/link-agents.sh` and settings copy
+with the `*.mac.json` files.
+
+### Re-syncing this repo
+
+When the live setup changes, copy the changed file over, strip machine state
+(`lastChangelogVersion`, `extensionChangelogVersions` in pi settings), and run
+`scripts/scan-secrets.sh` before every push. `shared/AGENTS.md` is
+`~/vault/AGENTS.md` with the substitutions listed in its header comment.
+
+## Pi packages
 
 Paths are relative to `~/.pi/agent`, so `../../Projects/x` is `~/Projects/x`.
-Drop any local entry you do not clone; the npm ones work on their own.
+Drop a local entry you do not clone; the npm ones work on their own.
 
-| package | type | what |
-|---|---|---|
-| `npm:@hk_net/pi-usage-bars` | npm | usage and quota footer |
-| `npm:@gotgenes/pi-anthropic-auth` | npm | Anthropic subscription auth |
-| `npm:pi-image-paste` | npm | paste images into the chat |
-| `npm:pi-mcp-adapter` | npm | MCP client (servers installed on demand); the built-in `mcp` extension is disabled in favour of it |
-| `../../Projects/pi-session-control` | local repo | lets the agent switch its model and compact its own context; auto-compacts at 180k tokens or 82% of the window |
-| `../../Projects/pi-local-delegate` | local repo | hands cheap subtasks to a local Ollama box |
-| `../../Projects/pi-terminal-kit/packages/pi-codrive` | local repo | subagents in tmux panes (`spawn_agent`) |
-| `../../Projects/pi-terminal-kit/packages/pi-arcoiris-refined` | local repo | colour theme |
-| `../../Projects/pi-vault` | local repo | secrets from the Secret Service keyring (`secret-tool`), injected into one command without the model seeing them |
-| `../../Projects/ipod-vault/pi-extension` | local repo | the same for a password vault on a physical iPod; drop it without that hardware |
-| `../../Projects/capri-desktop/linux/pi-extension` | local repo | desktop overlay showing what the agent is doing |
+| Package | Server | Mac | What |
+|---|---|---|---|
+| `npm:@hk_net/pi-usage-bars` | yes | yes | usage and quota footer |
+| `npm:@gotgenes/pi-anthropic-auth` | yes | yes | Anthropic subscription auth |
+| `npm:pi-mcp-adapter` | yes | yes | MCP client; replaces the built-in `mcp` extension (disabled with `-builtin:mcp`) |
+| `npm:cc-safety-net` | yes | yes | blocks destructive shell commands |
+| `npm:pi-lens` | yes | yes | LSP, linter and type-check feedback after edits |
+| `npm:pi-image-paste` | no | yes | paste images into the chat |
+| [pi-terminal-kit](https://github.com/mino-shared/pi-terminal-kit) `packages/pi-codrive` | yes | yes | subagents in tmux panes (`spawn_agent`) |
+| [pi-terminal-kit](https://github.com/mino-shared/pi-terminal-kit) `packages/pi-arcoiris-refined` | yes | yes | colour theme |
+| [pi-session-control](https://github.com/mino-shared/pi-session-control) | yes | yes | the agent switches its own model and compacts its own context |
+| [pi-vault](https://github.com/mino-shared/pi-vault) | yes | yes | run a command with a secret the model never sees (Secret Service on Linux, keychain + Touch ID on macOS) |
+| ipod-vault `pi-extension` | yes | no | the same for a password vault on a physical iPod |
+| capri-desktop `linux/pi-extension` | no | yes | Capri overlay showing what the agent is doing |
 
-Removed since the last sync: `pi-agent-browser-native` (replaced by `pib`,
-below) and `pi-lens`.
+## Related repos
 
-## Browser
-
-The agent drives a real, logged-in Chrome through `pib`, a small CDP command-line
-tool with a Pi skill (`~/Projects/pib`, not published yet). It replaced the
-`agent_browser` tool, which launched a detectable headless Chrome and failed
-9% of its calls. `pib-chrome start` (run from the compositor's autostart)
-keeps one Chrome on `127.0.0.1:9222`; each Pi session works in its own tab.
+Linked, not copied: [pib](https://github.com/mino-shared/pib) (agent browser
+CLI and skill), [pi-vault](https://github.com/mino-shared/pi-vault),
+[pi-session-control](https://github.com/mino-shared/pi-session-control),
+[pi-terminal-kit](https://github.com/mino-shared/pi-terminal-kit), and
+capri-desktop (separate private repo: Capri overlay, Claude Code hooks, the
+pi extension).
 
 ## Models
 
-`claude-opus-5-5` for everyday work, in sessions and subagents alike;
-`claude-fable-5-2` only for special tasks with high impact on the project.
+`claude-opus-5-5` for all work, in sessions and subagents alike (pi
+`defaultModel`, Claude Code `model`).
+
+## History
+
+Started in 2026-08 as the pi config of a Linux laptop that has since been
+retired; rebuilt on 2026-11-18 around the server and the Mac.

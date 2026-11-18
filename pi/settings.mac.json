@@ -1,5 +1,4 @@
 {
-  "lastChangelogVersion": "1.5.2",
   "theme": "arcoiris-refined",
   "defaultProvider": "anthropic",
   "defaultModel": "claude-opus-5-5",
@@ -15,12 +14,12 @@
     },
     "npm:@hk_net/pi-usage-bars",
     "npm:@gotgenes/pi-anthropic-auth",
-    "../../Projects/pi-vault",
     "npm:pi-image-paste",
-    "../../Projects/ipod-vault/pi-extension",
     "../../Projects/pi-session-control",
-    "../../Projects/pi-local-delegate",
+    "../../Projects/pi-vault",
     "npm:pi-mcp-adapter",
+    "npm:cc-safety-net",
+    "npm:pi-lens",
     "../../Projects/capri-desktop/linux/pi-extension"
   ],
   "extensions": [

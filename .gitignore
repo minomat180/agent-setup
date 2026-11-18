@@ -1,2 +1,10 @@
 .DS_Store
 *.bak
+*.bak-*
+# never commit live credentials or caches
+auth.json
+models-store.json
+.credentials.json
+settings.local.json
+.env
+.env.*
