@@ -74,6 +74,7 @@ separate copies: work moves between them only through git.
 - **Search before building.** Check the vault, the tool's docs, registries and GitHub. When you do build, say what you checked.
 - **Style.** Concise and direct. No emojis in output, code, docs, commits or comments unless asked. Do not reopen settled preferences.
 - **Git.** Every branch is `feature/<kebab-topic>`, created before the work starts.
+- **Ready to merge: mino only approves.** mino's preferred way to receive any change to one of his repos: you do the whole job and hand back a PR he only has to review and merge. Branch, implement, verify (tests, builds, a secret scan before every push, screenshots for anything visual), commit, push the feature branch, open the PR with what changed, what you verified and what is left for him, update the project's vault note, link the PR in T3. Do not stop to ask between those steps. Standing permission covers pushing feature branches and opening PRs on mino's own repos (`minomat180`, `mino-shared`); repos shared with others still need his OK first. Never merge, force-push, delete branches, rename a repo or change its visibility: list those at the end as his decisions. Pushes go from minomatNix (the Mac has no GitHub credentials). Background: `lessons.md`, "Ready to merge".
 - **Model.** `claude-opus-5-5` for all work, in sessions and subagents alike.
 - **Delegating.** Paste the hard constraints and the BOTTOM LINE contract into every child prompt (a child does not inherit your context). A report is a claim: spot-check it before relaying and say what you verified. In pi, read the `delegation` skill before the first spawn.
 
@@ -117,6 +118,7 @@ status board for everything.
 - **New project**: create `projects/<name>.md`, add a row to `projects/index.md`, and a local `AGENTS.md` pointer in the repo (git-excluded).
 - **Deleted project or tool**: delete its notes; leave one line under "Removed" in `projects/index.md` (where it went, or just its origin URL).
 - **A correction from mino about how to work**: one line under "How mino wants work done" if it applies to every session; the story goes in `lessons.md`.
+- **An idea, not a task** (a follow-up you were told not to do, an improvement you noticed): one dated line in `ideas.md`; do not act on it.
 - **Stopping with something unfinished**: add it to `open-threads.md`. When mino says "continue" or refers to earlier work, read `open-threads.md` first.
 
 Index (paths relative to `~/vault/`):
@@ -128,4 +130,4 @@ Index (paths relative to `~/vault/`):
 - Secrets: skill `vault`; background: `tools/secrets-and-vaults.md`
 - Pi harness: `tools/pi-harness.md`. T3 Code: `tools/t3-code.md`
 - Making a GitHub repo complete: `reference/github-repo-full-setup.md`
-- Unfinished work: `open-threads.md`. Why the rules exist: `lessons.md`
+- Unfinished work: `open-threads.md`. Ideas for later: `ideas.md`. Why the rules exist: `lessons.md`
