@@ -30,7 +30,8 @@ not use it.
 
 The server runs Claude Code mostly through T3 Code and has no hooks or plugins;
 its settings only pick the theme and the model alias. Not copied:
-`settings.local.json` (per-machine permission grants), `.credentials.json`.
+`settings.local.json` (per-machine permission grants), `.credentials.json`, and
+the live Mac file's `permissions.deny` rules for one private per-repo file.
 
 ## Skills
 

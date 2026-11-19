@@ -33,7 +33,7 @@ patterns=(
 	'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'   # email addresses
 	'"(access|refresh)_?[Tt]oken"[[:space:]]*:'
 )
-allow='noreply@anthropic\.com|git@github\.com'
+allow='noreply@anthropic\.com|git@github\.com|users\.noreply\.github\.com'
 
 hits=0
 for p in "${patterns[@]}"; do
