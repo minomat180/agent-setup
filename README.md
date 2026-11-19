@@ -205,7 +205,7 @@ such as `<mac-tailnet-ip>`.
   CLI, its Chrome launcher and its skill.
 - [agent-vault](https://github.com/minomat180/agent-vault): `agent-vault`,
   `vault-run` and the `vault` skill.
-- capri-desktop (private): the desktop overlay that shows what Claude Code is
+- [capri-desktop](https://github.com/minomat180/capri-desktop): the desktop overlay that shows what Claude Code is
   doing, fed by the hooks in `claude/settings.mac.json`.
 
 ## Credits
