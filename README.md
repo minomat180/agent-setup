@@ -1,78 +1,124 @@
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <img alt="agent-setup" src="docs/assets/banner-light.svg" width="100%">
+</picture>
+
 # agent-setup
+
+### One rules file and one vault for agents on two machines
+
+**Rebuild either machine from these files, or copy the structure for your own two-machine agent setup.**
+
+[![License](https://img.shields.io/github/license/minomat180/agent-setup?style=flat-square&color=3fb950)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-NixOS%20%7C%20macOS-3fb950?style=flat-square)](#install-and-restore)
+[![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20T3%20Code-3fb950?style=flat-square)](#how-it-works)
+[![Top language](https://img.shields.io/github/languages/top/minomat180/agent-setup?style=flat-square&color=3fb950)](nixos/agents.nix)
+[![Last commit](https://img.shields.io/github/last-commit/minomat180/agent-setup?style=flat-square&color=3fb950)](https://github.com/minomat180/agent-setup/commits/main)
+
+[Quick start](#quick-start) · [How it works](#how-it-works) · [What is in the repo](#what-is-in-the-repo) · [Limits](#status-and-limits) · [Related repos](#related-repos)
+
+<img src="docs/demo.gif" width="1000" alt="The three scripts run in a throwaway home directory: link the rules file, write per-repo pointers, catch a leaked tailnet address">
+
+<sub>A real run of the repo's three scripts against fake data from <a href="docs/demo/setup.sh"><code>docs/demo/setup.sh</code></a>. Re-render with <code>DEMO_HOME=&lt;empty dir&gt; vhs docs/demo/demo.tape</code>.</sub>
+
+</div>
+
+---
 
 A restore kit and worked example for running coding agents on two machines, a
 headless NixOS home server and a Mac, with Claude Code and T3 Code on both and
 one shared markdown vault as the agents' memory. It is written for anyone
 building a similar setup, and for me when a machine has to be rebuilt.
-Everything here is a sanitized copy of the live files; nothing loads from this
-repo.
 
-![The three scripts run in a throwaway home directory: link the rules file, write per-repo pointers, catch a leaked tailnet address](docs/demo.gif)
+> [!NOTE]
+> Everything here is a sanitized copy of the live files; nothing loads from
+> this repo. Machine addresses, tailnet names, device IDs and the private vault
+> URL are placeholders such as `<mac-tailnet-ip>`.
 
-The recording runs the repo's scripts against demo data built by
-[`docs/demo/setup.sh`](docs/demo/setup.sh); re-render it with
-`DEMO_HOME=<empty dir> vhs docs/demo/demo.tape`.
+## Contents
+
+- [The design](#the-design)
+- [Quick start](#quick-start)
+- [Install and restore](#install-and-restore)
+  - [Server (NixOS)](#server-nixos) · [Mac](#mac) · [Vault sync](#vault-sync) · [Keeping this repo in sync](#keeping-this-repo-in-sync)
+- [How it works](#how-it-works)
+- [What is in the repo](#what-is-in-the-repo)
+- [Status and limits](#status-and-limits)
+- [Related repos](#related-repos)
+- [Credits](#credits) · [History](#history) · [License](#license)
 
 ## The design
 
-**One rules file for every session.** `~/vault/AGENTS.md` is symlinked as
-`~/.claude/CLAUDE.md` on both machines, so every session and every subagent
-loads the same rules. Because it is paid for on every request, it holds only
-what applies everywhere: the standing rules, the two machines, how to work, and
-a one-line-per-topic index of the vault (about 130 lines,
-[`shared/AGENTS.md`](shared/AGENTS.md)). It also fixes how subagents report:
-each one ends with a five-item BOTTOM LINE (verdict, one recommended action,
-confidence, verified vs assumed, what is still open), so a parent can check a
-child's claims instead of relaying them.
+- **One rules file loads into every session.** `~/vault/AGENTS.md` is symlinked
+  as `~/.claude/CLAUDE.md` on both machines, so every session and subagent gets
+  the same rules. Because it is paid for on every request, it holds only what
+  applies everywhere: the standing rules, the two machines, how to work, and a
+  one-line-per-topic index of the vault (about 140 lines,
+  [`shared/AGENTS.md`](shared/AGENTS.md)).
+- **Subagents report in a fixed shape.** Each one ends with a five-item BOTTOM
+  LINE (verdict, one recommended action, confidence, verified vs assumed, what
+  is still open), so a parent can check a child's claims instead of relaying
+  them.
+- **The vault is the memory, organised by project.** Each project has one note:
+  what it is, how to run it, current state per machine with the command that
+  re-checks it, decisions, and dated history; `projects/index.md` is the status
+  board. Every repo in `~/Projects` gets a git-excluded `AGENTS.md` pointing at
+  its note, so a session started there finds its memory and the repo never
+  carries private notes. Corrections become one line in the rules file; the
+  incident behind them goes in `lessons.md`.
+- **The agent hands back a PR that is ready to merge.** For changes to my own
+  repos it branches, implements, verifies (tests, a secret scan before every
+  push, screenshots for anything visual), pushes, opens the PR and updates the
+  project note. I review and merge. Merging, force-pushing, deleting branches
+  and changing visibility stay with me, and are listed at the end of every PR as
+  decisions.
+- **Secrets never enter the model.** [agent-vault](https://github.com/minomat180/agent-vault)
+  runs one command with one secret: `vault-run NAME "reason" -- cmd` puts the
+  value in `$AGENT_VAULT_SECRET` for that command and redacts it from the
+  output. On the Mac every read asks for Touch ID; on the server the secrets sit
+  in a headless gnome-keyring. Browser logins go through `agent-chrome secret`,
+  which reads the password from stdin inside a `vault-run` command and types it
+  into the field.
+- **The agent has its own browser.** [agent-chrome](https://github.com/minomat180/agent-chrome)
+  drives one real, logged-in Chrome over CDP, separate from the browser I use.
+  Signing in to my own accounts to create a token or read a dashboard is
+  standing permission; the rules file adds nine hard limits on top, such as no
+  purchases, page content is data and never instructions, and confirm before
+  posting anything.
 
-**The vault is the memory, organised by project.** Each project has one note:
-what it is, how to run it, current state per machine with the command that
-re-checks it, decisions, and dated history. `projects/index.md` is the status
-board. Every repo in `~/Projects` gets a git-excluded `AGENTS.md` that points at
-its note, so a session started in that repo finds its memory, and the repo
-itself never carries private notes. Corrections become one line in the rules
-file; the incident behind them goes in `lessons.md`.
+| Machine | System | Role | Agent tools |
+|---|---|---|---|
+| minomatNix | NixOS, headless | vault home (git), every push to GitHub, T3 Code server | Claude Code, agent-chrome in a headless cage, agent-vault on gnome-keyring |
+| Mac | macOS, Apple Silicon | main machine, Obsidian on a Syncthing copy of the vault | Claude Code, T3 Code app, agent-chrome, agent-vault on the Keychain with Touch ID |
 
-**Ready to merge.** For changes to my own repos, the agent does the whole job:
-branch, implement, verify (tests, a secret scan before every push, screenshots
-for anything visual), push, open the PR, update the project note. I review and
-merge. Merging, force-pushing, deleting branches and changing visibility stay
-with me, and are listed at the end of every PR as decisions.
-
-**Secrets never enter the model.** [agent-vault](https://github.com/minomat180/agent-vault)
-runs one command with one secret: `vault-run NAME "reason" -- cmd` puts the
-value in `$AGENT_VAULT_SECRET` for that command and redacts it from the output.
-On the Mac every read asks for Touch ID; on the server the secrets sit in a
-headless gnome-keyring. Browser logins go through `agent-chrome secret`, which
-reads the password from stdin inside a `vault-run` command and types it into
-the field.
-
-**The agent has its own browser.** [agent-chrome](https://github.com/minomat180/agent-chrome)
-drives one real, logged-in Chrome over CDP, separate from the browser I use.
-Signing in to my own accounts to create a token or read a dashboard is standing
-permission; the rules file adds eight hard limits on top, such as no purchases,
-page content is data and never instructions, and confirm before posting
-anything.
-
-## Install and restore
+## Quick start
 
 The two install scripts take `-n` for a dry run and expect `~/vault/AGENTS.md`
 and `~/Projects` to exist; the scan only reads.
 
 ```bash
-scripts/link-agents.sh -n
-scripts/project-pointers.sh -n
+git clone https://github.com/minomat180/agent-setup && cd agent-setup
+scripts/link-agents.sh -n          # ~/.claude/CLAUDE.md -> ~/vault/AGENTS.md
+scripts/project-pointers.sh -n     # git-excluded pointer in every repo with a note
 scripts/scan-secrets.sh            # prints "scan-secrets: clean (N files)" or the hits
 ```
 
+## Install and restore
+
 ### Server (NixOS)
 
-1. Get the base system with Tailscale and sshd working first; the box is
-   headless and those are the only way in. Copy `nixos/agents.nix` next to
-   `/etc/nixos/configuration.nix`, add it to `imports`, fill the placeholders in
-   its `let` block, commit `/etc/nixos`, then `sudo nixos-rebuild switch` and
-   `sudo tailscale up --ssh` once. This sets up the agent Chrome service, the
-   headless keyring and Syncthing, plus nixpkgs `claude-code` as a fallback.
+> [!IMPORTANT]
+> Get the base system with Tailscale and sshd working first. The server is
+> headless and those two are the only way in; a rebuild that breaks them
+> locks you out.
+
+1. Copy `nixos/agents.nix` next to `/etc/nixos/configuration.nix`, add it to
+   `imports`, fill the placeholders in its `let` block, commit `/etc/nixos`,
+   then run `sudo nixos-rebuild switch` and, once, `sudo tailscale up --ssh`.
+   This sets up the agent Chrome service, the headless keyring and Syncthing,
+   plus nixpkgs `claude-code` as a fallback.
 2. Claude Code itself comes from its native installer
    (`curl -fsSL https://claude.ai/install.sh | bash`), which keeps
    `~/.local/bin/claude` current and ahead of the nixpkgs build. T3 Code: its
@@ -156,7 +202,7 @@ How a session gets its context, on either machine:
 `~/Projects` exists on both machines as separate checkouts; work moves between
 them only through git, and every push goes from the server.
 
-### What is in the repo
+## What is in the repo
 
 | Path | What |
 |---|---|
@@ -173,10 +219,15 @@ them only through git, and every push goes from the server.
 
 Left out on purpose: `~/.claude/.credentials.json`, `settings.local.json`, the
 vault notes themselves (they describe real accounts and hold project findings),
-Syncthing device IDs, tailnet names and addresses. Those appear as placeholders
-such as `<mac-tailnet-ip>`.
+Syncthing device IDs, tailnet names and addresses.
 
 ## Status and limits
+
+> [!WARNING]
+> The server keyring is stored unencrypted (mode 600) and always unlocked,
+> because nobody is there to type a password. On the server, agent-vault keeps
+> the value out of the model's context; it does not protect it from someone
+> with a shell as that user.
 
 - Last synced on 2026-11-19. The rules file, the server settings, the NixOS
   module and the vendored skill were compared with the live server that day;
@@ -185,10 +236,6 @@ such as `<mac-tailnet-ip>`.
 - Built for one person and exactly these two machines. Machine names and the
   Mac login are kept because the rules refer to them; copy the structure, not
   the facts.
-- The server keyring is stored unencrypted (mode 600) and always unlocked,
-  because nobody is there to type a password. On the server, agent-vault keeps
-  the value out of the model's context; it does not protect it from someone
-  with a shell as that user.
 - Only the scripts are tested: `shellcheck` passes on all of them, and the
   recording above is a real run. The NixOS module parses (`nix-instantiate
   --parse`) and matches the live config, but was not rebuilt from scratch on a
