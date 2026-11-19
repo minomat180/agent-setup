@@ -9,7 +9,7 @@
 
 ### One rules file and one vault for agents on two machines
 
-**The restore kit for a headless NixOS server and a Mac that run Claude Code and T3 Code with one shared rules file and one markdown vault as memory.**
+**Rebuild either machine from these files, or copy the structure for your own two-machine agent setup.**
 
 [![License](https://img.shields.io/github/license/minomat180/agent-setup?style=flat-square&color=3fb950)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-NixOS%20%7C%20macOS-3fb950?style=flat-square)](#install-and-restore)
@@ -115,9 +115,10 @@ scripts/scan-secrets.sh            # prints "scan-secrets: clean (N files)" or t
 > locks you out.
 
 1. Copy `nixos/agents.nix` next to `/etc/nixos/configuration.nix`, add it to
-   `imports`, fill the placeholders in its `let` block, commit `/etc/nixos`, then `sudo nixos-rebuild switch` and
-   `sudo tailscale up --ssh` once. This sets up the agent Chrome service, the
-   headless keyring and Syncthing, plus nixpkgs `claude-code` as a fallback.
+   `imports`, fill the placeholders in its `let` block, commit `/etc/nixos`,
+   then run `sudo nixos-rebuild switch` and, once, `sudo tailscale up --ssh`.
+   This sets up the agent Chrome service, the headless keyring and Syncthing,
+   plus nixpkgs `claude-code` as a fallback.
 2. Claude Code itself comes from its native installer
    (`curl -fsSL https://claude.ai/install.sh | bash`), which keeps
    `~/.local/bin/claude` current and ahead of the nixpkgs build. T3 Code: its
@@ -218,8 +219,7 @@ them only through git, and every push goes from the server.
 
 Left out on purpose: `~/.claude/.credentials.json`, `settings.local.json`, the
 vault notes themselves (they describe real accounts and hold project findings),
-Syncthing device IDs, tailnet names and addresses. Those appear as placeholders
-such as `<mac-tailnet-ip>`.
+Syncthing device IDs, tailnet names and addresses.
 
 ## Status and limits
 

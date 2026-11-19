@@ -14,7 +14,7 @@
     <rect x="1088" y="112" width="104" height="72" rx="4" stroke="#3fb950"/>
     <line x1="1104" y1="136" x2="1144" y2="136" stroke="#8b949e"/>
     <line x1="1104" y1="152" x2="1128" y2="152" stroke="#8b949e"/>
-    <path d="M1076 196 H1204 L1196 208 H1084 Z" stroke="#3fb950"/>
+    <path d="M1080 196 H1200 L1192 208 H1088 Z" stroke="#3fb950"/>
     <!-- the link between them -->
     <line x1="1016" y1="164" x2="1088" y2="164" stroke="#3fb950" stroke-dasharray="6 6"/>
   </g>
