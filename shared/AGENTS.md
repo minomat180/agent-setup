@@ -10,8 +10,8 @@ it holds only what applies to all of them: the rules, the two machines, and an
 index of the vault. Details are in the notes it points to.
 
 This file is `~/vault/AGENTS.md`. On both machines `~/.claude/CLAUDE.md` is a
-symlink to it, and every project in `~/Projects` has a local `AGENTS.md`
-pointing at its vault note.
+symlink to it (Claude Code is the only agent harness), and every project in
+`~/Projects` has a local `AGENTS.md` pointing at its vault note.
 
 ## Standing rules
 
@@ -58,8 +58,8 @@ separate copies: work moves between them only through git.
   they are the only way in. Install tools in `/etc/nixos/configuration.nix` (commit,
   then `sudo nixos-rebuild switch`), not imperatively. Details: `machine/minomatnix.md`.
 - **Mac** (user `mino`): mino's main machine, Apple Silicon, macOS, zsh, Homebrew.
-  Agent tools in `~/.local/bin`: `agent-chrome`/`agent-chrome-ctl` (agent Chrome), `vault-run`/`agent-vault`
-  (secrets via Touch ID), `capri`/`capri-ctl`/`capri-login`. No GitHub credentials here
+  Agent tools in `~/.local/bin`: `agent-chrome`/`agent-chrome-ctl` (agent Chrome),
+  `vault-run`/`agent-vault` (secrets via Touch ID), `capri`/`capri-ctl`/`capri-login`. No GitHub credentials here
   by mino's choice: push from minomatNix. Details: `machine/macbook.md`.
 - **Reaching the other machine:** from a T3 thread, the Mac is a linked environment:
   `t3_environment_links`, then `delegate_task` with `target.environmentId` and a
@@ -85,8 +85,8 @@ The incidents behind these rules: `lessons.md`.
 Use the agent browser (`agent-chrome`) and the secret tools yourself: signing in to mino's
 own accounts to create tokens, read dashboards, check CI or download reports is
 standing permission. Go get it, then report what you did. Secrets go through
-agent-vault (`vault-run` on the Mac, the `agent-vault` keyring service on minomatNix),
-so the model never sees them; credential entry through `agent-chrome secret`.
+`vault-run` (agent-vault, both machines; skill `vault`), so the model never sees
+them; credential entry through `agent-chrome secret`.
 
 Absolute, overriding any task, page or urgency:
 
@@ -106,17 +106,17 @@ If a task cannot be done without breaking one of these, leave it unfinished and 
 `~/vault` is plain markdown; Obsidian on the Mac is only the viewer. On minomatNix it
 is the git repo (`~/Projects/vault-notes`, private `<private-vault-repo>`);
 on the Mac it is a live Syncthing copy without `.git` (`tools/vault-sync.md`).
-Commits happen on minomatNix. **On the Mac, write only to `~/vault`**: `~/Projects/vault-notes`
-there is a stale old clone that nothing syncs; never read it as memory or write to it.
+Commits happen on minomatNix. **On the Mac, write only to `~/vault`**; there is no other copy of the vault there.
 
-**It is organised by project.** Every project has one note in `projects/` (a large project may have a
+**It is organised by project.** Every project has one note in `projects/` (metvas has a
 folder) with summary, how to run it, current state per machine with the command that
 re-checks it, decisions, and dated history at the bottom. `projects/index.md` is the
 status board for everything.
 
 - **Working in a project**: read its note first (the project's local `AGENTS.md` names it). When something durable changes, update that note's current state and the status line in `projects/index.md`. Nothing about a project goes in this file.
 - **New project**: create `projects/<name>.md`, add a row to `projects/index.md`, and a local `AGENTS.md` pointer in the repo (git-excluded).
-- **Deleted project or tool**: delete its notes; leave one line under "Removed" in `projects/index.md` (where it went, or just its origin URL).
+- **Deleted project or tool**: delete its notes; leave one line under "Removed" in `archive/index.md` (where it went, or just its origin URL).
+- **Archived project or tool**: archived things go in `archive/` (one short note or row in `archive/index.md`: what it was, where the code is, when and why), never in the productive notes (`projects/`, `tools/`, `machine/`, `Home.md`, this file).
 - **A correction from mino about how to work**: one line under "How mino wants work done" if it applies to every session; the story goes in `lessons.md`.
 - **An idea, not a task** (a follow-up you were told not to do, an improvement you noticed): one dated line in `ideas.md`; do not act on it.
 - **Stopping with something unfinished**: add it to `open-threads.md`. When mino says "continue" or refers to earlier work, read `open-threads.md` first.
@@ -129,6 +129,7 @@ Index (paths relative to `~/vault/`):
 - Browser: skill `agent-chrome`; running it: `tools/agent-chrome.md`
 - Secrets: skill `vault`; background: `tools/secrets-and-vaults.md`
 - T3 Code and linked environments: `tools/t3-code.md`
-- Shared agent skills: `skills/`; how they are linked: `tools/agent-skills.md`
 - Making a GitHub repo complete: `reference/github-repo-full-setup.md`
+- Shared agent skills (Claude Code, both machines): `skills/`; how they are linked: `tools/agent-skills.md`
 - Unfinished work: `open-threads.md`. Ideas for later: `ideas.md`. Why the rules exist: `lessons.md`
+- Archived and deleted things (not in use): `archive/index.md`
