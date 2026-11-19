@@ -1,4 +1,5 @@
-# Agent-relevant part of the server's /etc/nixos/configuration.nix (minomatNix).
+# Agent-relevant part of the server's /etc/nixos/configuration.nix (minomatNix),
+# last compared with the live file on 2026-11-19.
 # Hardware, boot, kernel and SSH/PAM details are left out: they belong to the box,
 # not to the agent setup.
 #
@@ -8,7 +9,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  user = "<user>";                         # the agent user
+  user = "<user>";                       # the login the agents run as
   home = "/home/${user}";
   vaultRepo = "${home}/Projects/vault-notes";   # git repo; ~/vault is a symlink to it
   macDeviceId = "<syncthing-device-id-of-the-mac>";
@@ -41,7 +42,8 @@ in
   ];
 
   # Secret Service for agent-vault on a headless box: gnome-keyring with a "login"
-  # keyring that is always open. Add secrets with
+  # keyring that is always open and stored unencrypted (mode 600), because nobody
+  # is there to type an unlock password. Add secrets with
   #   secret-tool store --label='agent-vault: NAME' service agent-vault account NAME
   systemd.user.services.gnome-keyring-headless = {
     description = "gnome-keyring Secret Service (headless, always unlocked)";
@@ -54,6 +56,21 @@ in
         mkdir -p "$k" && chmod 700 "$k"
         [ -e "$k/login.keyring" ] || printf '[keyring]\ndisplay-name=Login\nctime=0\nmtime=0\nlock-on-idle=false\nlock-after=false\n' > "$k/login.keyring"
         [ -e "$k/default" ] || printf login > "$k/default"
+        # gnome-keyring writes multi-line text secrets (a key file, say) into the
+        # plaintext keyring unescaped, then rejects the whole file on the next start
+        # and silently falls back to an in-memory collection. Re-escape them first.
+        if [ -s "$k/login.keyring" ]; then
+          ${pkgs.gawk}/bin/awk -f ${pkgs.writeText "keyring-fix-multiline.awk" ''
+            function flush() { if (cont) { if (multi) { gsub(/\\/, "\\\\", buf); gsub(/\n/, "\\n", buf) } print "secret=" buf; cont = 0 } }
+            /^secret=/ { flush(); buf = substr($0, 8); cont = 1; multi = 0; next }
+            cont && !/^(mtime|ctime)=/ && !/^\[/ { buf = buf "\n" $0; multi = 1; next }
+            { flush(); print }
+            END { flush() }
+          ''} "$k/login.keyring" > "$k/.login.keyring.fixed" \
+            && { cmp -s "$k/.login.keyring.fixed" "$k/login.keyring" \
+                 || mv "$k/.login.keyring.fixed" "$k/login.keyring"; }
+          rm -f "$k/.login.keyring.fixed"
+        fi
         chmod 600 "$k"/*
       '';
       ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --foreground --components=secrets";
@@ -138,4 +155,9 @@ in
   };
 
   virtualisation.docker.enable = true;
+  virtualisation.docker.autoPrune.enable = true;
+  # Docker's published ports skip the NixOS firewall (they go through FORWARD/DNAT),
+  # so `docker run -p 8080:80` would be open to the whole LAN. Publish on localhost
+  # by default; ask for another address explicitly (`-p <tailnet-ip>:8080:80`).
+  virtualisation.docker.daemon.settings.ip = "127.0.0.1";
 }

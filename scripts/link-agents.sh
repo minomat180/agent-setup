@@ -13,25 +13,26 @@ dry=0
 vault="${VAULT:-$HOME/vault}"
 target="$vault/AGENTS.md"
 
-run() { if [ "$dry" = 1 ]; then echo "would: $*"; else "$@"; fi; }
+# Print paths under $HOME as ~/...
+t() { printf '%s' "${1/#"$HOME"/\~}"; }
+run() { if [ "$dry" = 1 ]; then echo "would: ${*//"$HOME"/\~}"; else "$@"; fi; }
 
 if [ ! -e "$target" ]; then
-	echo "missing $target" >&2
+	echo "missing $(t "$target")" >&2
 	echo "copy shared/AGENTS.md there first (or set VAULT=...)" >&2
 	exit 1
 fi
 
 stamp="$(date +%Y%m%d-%H%M%S)"
-for link in "$HOME/.claude/CLAUDE.md"; do
-	run mkdir -p "$(dirname "$link")"
-	if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
-		echo "ok      $link"
-		continue
-	fi
-	if [ -e "$link" ] || [ -L "$link" ]; then
-		run mv "$link" "$link.bak-$stamp"
-		echo "moved   $link -> $link.bak-$stamp"
-	fi
-	run ln -s "$target" "$link"
-	echo "linked  $link -> $target"
-done
+link="$HOME/.claude/CLAUDE.md"
+run mkdir -p "$(dirname "$link")"
+if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
+	echo "ok      $(t "$link")"
+	exit 0
+fi
+if [ -e "$link" ] || [ -L "$link" ]; then
+	run mv "$link" "$link.bak-$stamp"
+	echo "moved   $(t "$link") -> $(t "$link.bak-$stamp")"
+fi
+run ln -s "$target" "$link"
+echo "linked  $(t "$link") -> $(t "$target")"

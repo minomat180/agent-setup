@@ -29,8 +29,8 @@ ln -s ~/vault/skills/frontend-taste ~/.claude/skills/frontend-taste
 scripts/project-pointers.sh
 ```
 
-Then clone [agent-chrome](https://github.com/mino-shared/agent-chrome) and
-[agent-vault](https://github.com/mino-shared/agent-vault) into `~/Projects`:
+Then clone [agent-chrome](https://github.com/minomat180/agent-chrome) and
+[agent-vault](https://github.com/minomat180/agent-vault) into `~/Projects`:
 link agent-chrome's commands (table below) and its skill
 (`ln -s ~/Projects/agent-chrome/skill ~/.claude/skills/agent-chrome`), and run
 agent-vault's `./install.sh` (builds the Touch ID helper, links `agent-vault`
@@ -51,8 +51,8 @@ there; commits happen on the server.
 
 | Tool | What | Source |
 |---|---|---|
-| `agent-chrome`, `agent-chrome-ctl` | Agent browser CLI and the agent Chrome it drives | symlinks into [mino-shared/agent-chrome](https://github.com/mino-shared/agent-chrome) `bin/` (Mac branch `feature/macos`) |
-| `agent-vault` | Store and list secrets in the login keychain (service `agent-vault`); every read asks for Touch ID | symlink into [mino-shared/agent-vault](https://github.com/mino-shared/agent-vault) `macos/` (its `install.sh`) |
+| `agent-chrome`, `agent-chrome-ctl` | Agent browser CLI and the agent Chrome it drives | symlinks into [minomat180/agent-chrome](https://github.com/minomat180/agent-chrome) `bin/` (Mac branch `feature/macos`) |
+| `agent-vault` | Store and list secrets in the login keychain (service `agent-vault`); every read asks for Touch ID | symlink into [minomat180/agent-vault](https://github.com/minomat180/agent-vault) `macos/` (its `install.sh`) |
 | `vault-run` | Run one command with one secret in `$AGENT_VAULT_SECRET`, output redacted | symlink into agent-vault `bin/` (its `install.sh`) |
 | `capri`, `capri-ctl`, `capri-login` | Capri desktop overlay for agent activity | symlinks into capri-desktop (separate private repo; `linux/bin/`, `macos/bin/`) |
 | `t3` | T3 Code CLI | symlink to `~/.t3/bin/t3` |

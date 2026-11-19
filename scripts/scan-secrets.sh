@@ -6,7 +6,7 @@
 #
 # Usage: scripts/scan-secrets.sh [path...]
 set -uo pipefail
-cd "$(git rev-parse --show-toplevel)"
+cd "$(git rev-parse --show-toplevel)" || exit 2
 
 if [ "$#" -gt 0 ]; then
 	files=("$@")

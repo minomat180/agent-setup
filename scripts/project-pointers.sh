@@ -36,13 +36,16 @@ find_note() {
 	return 1
 }
 
+# Print paths under $HOME as ~/...
+t() { printf '%s' "${1/#"$HOME"/\~}"; }
+
 ours() { head -n 1 "$1" 2>/dev/null | grep -q ': agent pointer (local, not committed)$'; }
 
 tracked() { git -C "$1" ls-files --error-unmatch "$2" >/dev/null 2>&1; }
 
 write() {
 	# write <file> <content>
-	if [ "$dry" = 1 ]; then echo "  would write $1"; else printf '%s\n' "$2" > "$1"; fi
+	if [ "$dry" = 1 ]; then echo "  would write $(t "$1")"; else printf '%s\n' "$2" > "$1"; fi
 }
 
 exclude() {
@@ -63,7 +66,7 @@ for repo in "$projects"/*/; do
 	fi
 
 	if ! rel="$(find_note "$name")"; then
-		echo "skip    $name (no note in $notes)"
+		echo "skip    $name (no note in $(t "$notes"))"
 		continue
 	fi
 	echo "repo    $name -> projects/$rel"
