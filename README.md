@@ -14,7 +14,7 @@
 [![License](https://img.shields.io/github/license/minomat180/agent-setup?style=flat-square&color=3fb950)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-NixOS%20%7C%20macOS-3fb950?style=flat-square)](#install-and-restore)
 [![Agents](https://img.shields.io/badge/agents-Claude%20Code%20%7C%20T3%20Code-3fb950?style=flat-square)](#how-it-works)
-[![Top language](https://img.shields.io/github/languages/top/minomat180/agent-setup?style=flat-square&color=3fb950)](scripts/)
+[![Top language](https://img.shields.io/github/languages/top/minomat180/agent-setup?style=flat-square&color=3fb950)](nixos/agents.nix)
 [![Last commit](https://img.shields.io/github/last-commit/minomat180/agent-setup?style=flat-square&color=3fb950)](https://github.com/minomat180/agent-setup/commits/main)
 
 [Quick start](#quick-start) · [How it works](#how-it-works) · [What is in the repo](#what-is-in-the-repo) · [Limits](#status-and-limits) · [Related repos](#related-repos)
