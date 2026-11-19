@@ -41,7 +41,7 @@ keeps them current on the Mac.
 | Skill | Mac | Server | Source |
 |---|---|---|---|
 | `frontend-taste` | yes | yes | `~/vault/skills/frontend-taste` (symlink); a copy is in this repo, `skills/frontend-taste/` |
-| `agent-chrome` | yes | install with agent-chrome | [minomat180/agent-chrome](https://github.com/minomat180/agent-chrome), `skill/` (symlink) |
-| `vault` | yes | with agent-vault | [minomat180/agent-vault](https://github.com/minomat180/agent-vault) `skill/`, installed by its `install.sh` |
+| `agent-chrome` | yes | yes | [minomat180/agent-chrome](https://github.com/minomat180/agent-chrome), `skill/` (symlink) |
+| `vault` | yes | yes | [minomat180/agent-vault](https://github.com/minomat180/agent-vault) `skill/`, installed by its `install.sh` |
 | `web-search` | yes | no | see `skills/README.md` |
 | `youtube-transcript` | yes | no | see `skills/README.md` |

@@ -1,10 +1,11 @@
 # agent-setup
 
-The written-down setup behind my coding agents: a headless NixOS home server and
-a Mac, both running Claude Code and T3 Code, sharing one markdown vault as the
-agents' memory. It is a restore kit for me and a worked example for anyone
-building something similar. Everything here is a sanitized copy; nothing loads
-from this repo.
+A restore kit and worked example for running coding agents on two machines, a
+headless NixOS home server and a Mac, with Claude Code and T3 Code on both and
+one shared markdown vault as the agents' memory. It is written for anyone
+building a similar setup, and for me when a machine has to be rebuilt.
+Everything here is a sanitized copy of the live files; nothing loads from this
+repo.
 
 ![The three scripts run in a throwaway home directory: link the rules file, write per-repo pointers, catch a leaked tailnet address](docs/demo.gif)
 
@@ -53,7 +54,73 @@ permission; the rules file adds eight hard limits on top, such as no purchases,
 page content is data and never instructions, and confirm before posting
 anything.
 
-## How it fits together
+## Install and restore
+
+The two install scripts take `-n` for a dry run and expect `~/vault/AGENTS.md`
+and `~/Projects` to exist; the scan only reads.
+
+```bash
+scripts/link-agents.sh -n
+scripts/project-pointers.sh -n
+scripts/scan-secrets.sh            # prints "scan-secrets: clean (N files)" or the hits
+```
+
+### Server (NixOS)
+
+1. Get the base system with Tailscale and sshd working first; the box is
+   headless and those are the only way in. Copy `nixos/agents.nix` next to
+   `/etc/nixos/configuration.nix`, add it to `imports`, fill the placeholders in
+   its `let` block, commit `/etc/nixos`, then `sudo nixos-rebuild switch` and
+   `sudo tailscale up --ssh` once. This sets up the agent Chrome service, the
+   headless keyring and Syncthing, plus nixpkgs `claude-code` as a fallback.
+2. Claude Code itself comes from its native installer
+   (`curl -fsSL https://claude.ai/install.sh | bash`), which keeps
+   `~/.local/bin/claude` current and ahead of the nixpkgs build. T3 Code: its
+   server installer puts the CLI at `~/.t3/bin/t3` and writes
+   `~/.config/systemd/user/t3code.service`; `agents.nix` adds
+   `t3-project-sync`, which registers every `~/Projects` folder as a T3 project.
+3. The vault: clone the private vault repo to `~/Projects/vault-notes` and
+   `ln -s ~/Projects/vault-notes ~/vault`. For a new vault, copy `vault/` and
+   `shared/AGENTS.md` from here into it.
+4. Config from this repo:
+   ```bash
+   scripts/link-agents.sh
+   cp claude/settings.minomatnix.json ~/.claude/settings.json
+   mkdir -p ~/.claude/skills ~/vault/skills
+   cp -rn skills/frontend-taste ~/vault/skills/    # new vault only
+   ln -s ~/vault/skills/frontend-taste ~/.claude/skills/frontend-taste
+   ```
+5. Clone [agent-chrome](https://github.com/minomat180/agent-chrome) and
+   [agent-vault](https://github.com/minomat180/agent-vault) into `~/Projects`.
+   Link agent-chrome's `bin/` (`agent-chrome`, `agent-chrome-ctl`) into
+   `~/.local/bin` and its `skill/` to `~/.claude/skills/agent-chrome`; run
+   agent-vault's `./install.sh`. Then run `scripts/project-pointers.sh`.
+6. Log in: `claude`, `gh auth login`. Add each secret yourself with
+   `agent-vault set NAME`, which prompts for the value, so it never passes
+   through an agent.
+7. Check: `systemctl --user is-active t3code agent-chrome; systemctl is-active syncthing tailscaled`.
+
+### Mac
+
+[`mac/README.md`](mac/README.md): Homebrew, Syncthing pairing for `~/vault`, the
+`~/.local/bin` tools, then the same `scripts/link-agents.sh` and a settings copy
+from `claude/settings.mac.json`.
+
+### Vault sync
+
+`~/vault` is a git repo on the server and a live two-way Syncthing copy without
+`.git` on the Mac. Syncthing talks over the tailnet only: no relays, no global
+or local discovery, GUI on localhost. The server side is declarative in
+`nixos/agents.nix` (fill `macDeviceId` and `macAddress`); on the Mac, accept the
+`vault-notes` folder with path `~/vault`. Commits happen on the server.
+
+### Keeping this repo in sync
+
+When the live setup changes, copy the changed file over, replace user paths
+with `$HOME` and logins, repo URLs and addresses with placeholders, and run
+`scripts/scan-secrets.sh` before every push.
+
+## How it works
 
 ```mermaid
 flowchart LR
@@ -89,7 +156,7 @@ How a session gets its context, on either machine:
 `~/Projects` exists on both machines as separate checkouts; work moves between
 them only through git, and every push goes from the server.
 
-## What is in the repo
+### What is in the repo
 
 | Path | What |
 |---|---|
@@ -109,71 +176,11 @@ vault notes themselves (they describe real accounts and hold project findings),
 Syncthing device IDs, tailnet names and addresses. Those appear as placeholders
 such as `<mac-tailnet-ip>`.
 
-## Install and restore
-
-All three scripts take `-n` for a dry run. Try them first:
-
-```bash
-scripts/link-agents.sh -n
-scripts/project-pointers.sh -n
-scripts/scan-secrets.sh            # prints "scan-secrets: clean (N files)" or the hits
-```
-
-### Server (NixOS)
-
-1. Get the base system with Tailscale and sshd working first; the box is
-   headless and those are the only way in. Copy `nixos/agents.nix` next to
-   `/etc/nixos/configuration.nix`, add it to `imports`, fill the placeholders in
-   its `let` block, commit `/etc/nixos`, then `sudo nixos-rebuild switch` and
-   `sudo tailscale up --ssh` once. This installs Claude Code (`claude-code` from
-   nixpkgs), the agent Chrome service, the headless keyring and Syncthing.
-2. T3 Code: install its server, which writes
-   `~/.config/systemd/user/t3code.service`. `agents.nix` adds
-   `t3-project-sync`, which registers every `~/Projects` folder as a T3 project.
-3. The vault: clone the private vault repo to `~/Projects/vault-notes` and
-   `ln -s ~/Projects/vault-notes ~/vault`. For a new vault, copy `vault/` and
-   `shared/AGENTS.md` from here into it.
-4. Config from this repo:
-   ```bash
-   scripts/link-agents.sh
-   cp claude/settings.minomatnix.json ~/.claude/settings.json
-   mkdir -p ~/.claude/skills
-   ln -s ~/vault/skills/frontend-taste ~/.claude/skills/frontend-taste
-   ```
-5. Clone [agent-chrome](https://github.com/minomat180/agent-chrome) and
-   [agent-vault](https://github.com/minomat180/agent-vault) into `~/Projects`.
-   Link agent-chrome's `bin/` (`agent-chrome`, `agent-chrome-ctl`) into
-   `~/.local/bin` and its `skill/` to `~/.claude/skills/agent-chrome`; run
-   agent-vault's `./install.sh`. Then run `scripts/project-pointers.sh`.
-6. Log in: `claude`, `gh auth login`. Secrets go into the headless keyring:
-   `secret-tool store --label='agent-vault: NAME' service agent-vault account NAME`.
-7. Check: `systemctl --user is-active t3code agent-chrome; systemctl is-active syncthing tailscaled`.
-
-### Mac
-
-[`mac/README.md`](mac/README.md): Homebrew, Syncthing pairing for `~/vault`, the
-`~/.local/bin` tools, then the same `scripts/link-agents.sh` and a settings copy
-from `claude/settings.mac.json`.
-
-### Vault sync
-
-`~/vault` is a git repo on the server and a live two-way Syncthing copy without
-`.git` on the Mac. Syncthing talks over the tailnet only: no relays, no global
-or local discovery, GUI on localhost. The server side is declarative in
-`nixos/agents.nix` (fill `macDeviceId` and `macAddress`); on the Mac, accept the
-`vault-notes` folder with path `~/vault`. Commits happen on the server.
-
-### Keeping this repo in sync
-
-When the live setup changes, copy the changed file over, replace user paths
-with `$HOME` and machine names, logins or addresses with placeholders, and run
-`scripts/scan-secrets.sh` before every push.
-
 ## Status and limits
 
 - Last synced on 2026-11-19. The rules file, the server settings, the NixOS
   module and the vendored skill were compared with the live server that day;
-  the Mac files come from the same day's pass. It drifts when the live setup
+  the Mac files come from a 2026-11-18 snapshot. It drifts when the live setup
   changes and nobody re-syncs it.
 - Built for one person and exactly these two machines. Machine names and the
   Mac login are kept because the rules refer to them; copy the structure, not
@@ -185,8 +192,8 @@ with `$HOME` and machine names, logins or addresses with placeholders, and run
 - Only the scripts are tested: `shellcheck` passes on all of them, and the
   recording above is a real run. The NixOS module parses (`nix-instantiate
   --parse`) and matches the live config, but was not rebuilt from scratch on a
-  clean machine. The Mac steps come from a 2026-11-18 snapshot; a full
-  `brew list` was not captured.
+  clean machine. A full `brew list` of the Mac was not captured, and the T3 Code
+  install command is not recorded here.
 - `scripts/scan-secrets.sh` needs bash 4 (`mapfile`), so on macOS run it with
   Homebrew's bash or on the server.
 - Two skills (`web-search`, `youtube-transcript`) are listed without a recorded

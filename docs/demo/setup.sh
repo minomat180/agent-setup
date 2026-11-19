@@ -4,7 +4,10 @@
 # address. Nothing here is real. Usage: docs/demo/setup.sh <demo-home> <repo>
 set -euo pipefail
 demo="$1" repo="$2"
-rm -rf "$demo"
+if [ -e "$demo" ] && [ -n "$(ls -A "$demo")" ]; then
+	echo "demo home must be missing or empty: $demo" >&2
+	exit 1
+fi
 mkdir -p "$demo/vault/projects/shop" "$demo/Projects"
 ln -s "$repo" "$demo/agent-setup"
 cp "$repo/shared/AGENTS.md" "$demo/vault/AGENTS.md"

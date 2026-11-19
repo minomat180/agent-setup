@@ -1,6 +1,7 @@
 <!-- Sanitized copy of ~/vault/AGENTS.md (2026-11-19). Differences from the live file: the
      server login and the private vault repo URL are placeholders, the production-project
-     index line is removed, and so is the aside about the retired GitHub org.
+     index line and the names of the shared projects are removed, and so is the aside
+     about the retired GitHub org.
      Install: copy to ~/vault/AGENTS.md, then run scripts/link-agents.sh. -->
 
 # Working for mino
@@ -108,8 +109,8 @@ is the git repo (`~/Projects/vault-notes`, private `<private-vault-repo>`);
 on the Mac it is a live Syncthing copy without `.git` (`tools/vault-sync.md`).
 Commits happen on minomatNix. **On the Mac, write only to `~/vault`**; there is no other copy of the vault there.
 
-**It is organised by project.** Every project has one note in `projects/` (metvas has a
-folder) with summary, how to run it, current state per machine with the command that
+**It is organised by project.** Every project has one note in `projects/` (a large project
+may have a folder) with summary, how to run it, current state per machine with the command that
 re-checks it, decisions, and dated history at the bottom. `projects/index.md` is the
 status board for everything.
 

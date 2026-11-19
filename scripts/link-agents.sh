@@ -32,7 +32,7 @@ if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
 fi
 if [ -e "$link" ] || [ -L "$link" ]; then
 	run mv "$link" "$link.bak-$stamp"
-	echo "moved   $(t "$link") -> $(t "$link.bak-$stamp")"
+	[ "$dry" = 1 ] || echo "moved   $(t "$link") -> $(t "$link.bak-$stamp")"
 fi
 run ln -s "$target" "$link"
-echo "linked  $(t "$link") -> $(t "$target")"
+[ "$dry" = 1 ] || echo "linked  $(t "$link") -> $(t "$target")"
