@@ -16,8 +16,8 @@ machine.
 
 | Skill | Where installed | Source |
 |---|---|---|
-| `vault` | Claude Code (Mac; server once agent-vault is installed there) | [mino-shared/agent-vault](https://github.com/mino-shared/agent-vault) `skill/`; its `install.sh` links it to `~/.claude/skills/vault` |
-| `agent-chrome` | Claude Code on the Mac | [mino-shared/agent-chrome](https://github.com/mino-shared/agent-chrome) (`skill/SKILL.md`); symlink `~/.claude/skills/agent-chrome` to the checkout's `skill/` |
+| `vault` | Claude Code, both machines | [minomat180/agent-vault](https://github.com/minomat180/agent-vault) `skill/`; its `install.sh` links it to `~/.claude/skills/vault` |
+| `agent-chrome` | Claude Code, both machines | [minomat180/agent-chrome](https://github.com/minomat180/agent-chrome) (`skill/SKILL.md`); symlink `~/.claude/skills/agent-chrome` to the checkout's `skill/` |
 | `web-search` | Claude Code on the Mac | DuckDuckGo search via `ddgs` + `markitdown` (`pip install --user ddgs markitdown`). Origin not recorded; copy from an existing machine |
 | `youtube-transcript` | Claude Code on the Mac | `transcript.js` on `youtube-transcript-plus`; origin not recorded; copy from an existing machine and run `npm install` in its folder |
 | `pdf`, `xlsx`, `docx`, `pptx` | built into Claude Code | Anthropic's document skills ([anthropics/skills](https://github.com/anthropics/skills)); proprietary licence, do not vendor |

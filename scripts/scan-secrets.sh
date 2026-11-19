@@ -6,7 +6,7 @@
 #
 # Usage: scripts/scan-secrets.sh [path...]
 set -uo pipefail
-cd "$(git rev-parse --show-toplevel)"
+cd "$(git rev-parse --show-toplevel)" || exit 2
 
 if [ "$#" -gt 0 ]; then
 	files=("$@")
@@ -33,7 +33,7 @@ patterns=(
 	'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'   # email addresses
 	'"(access|refresh)_?[Tt]oken"[[:space:]]*:'
 )
-allow='noreply@anthropic\.com|git@github\.com'
+allow='noreply@anthropic\.com|git@github\.com|users\.noreply\.github\.com'
 
 hits=0
 for p in "${patterns[@]}"; do

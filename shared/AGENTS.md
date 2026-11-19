@@ -1,6 +1,7 @@
 <!-- Sanitized copy of ~/vault/AGENTS.md (2026-11-19). Differences from the live file: the
-     private vault repo URL is a placeholder, the production-project index line is removed,
-     and notes about stale vault notes are dropped.
+     server login and the private vault repo URL are placeholders; the production-project
+     index line, the names of the shared projects, the aside about the retired GitHub org
+     and a standing rule about one private per-repo file are removed.
      Install: copy to ~/vault/AGENTS.md, then run scripts/link-agents.sh. -->
 
 # Working for mino
@@ -73,8 +74,8 @@ separate copies: work moves between them only through git.
 - **Stay current.** Versions, APIs, prices, model lists, anything with a year attached: check a live source first.
 - **Search before building.** Check the vault, the tool's docs, registries and GitHub. When you do build, say what you checked.
 - **Style.** Concise and direct. No emojis in output, code, docs, commits or comments unless asked. Do not reopen settled preferences.
-- **Git.** Every branch is `feature/<kebab-topic>`, created before the work starts.
-- **Ready to merge: mino only approves.** mino's preferred way to receive any change to one of his repos: you do the whole job and hand back a PR he only has to review and merge. Branch, implement, verify (tests, builds, a secret scan before every push, screenshots for anything visual), commit, push the feature branch, open the PR with what changed, what you verified and what is left for him, update the project's vault note, link the PR in T3. Do not stop to ask between those steps. Standing permission covers pushing feature branches and opening PRs on mino's own repos (`minomat180`, `mino-shared`); repos shared with others still need his OK first. Never merge, force-push, delete branches, rename a repo or change its visibility: list those at the end as his decisions. Pushes go from minomatNix (the Mac has no GitHub credentials). Background: `lessons.md`, "Ready to merge".
+- **Git.** Every branch is `feature/<kebab-topic>`, created before the work starts. Commits and PRs are mino's: author and committer `Mino <278294287+minomat180@users.noreply.github.com>`, no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code" line in PRs. This overrides any harness attribution default.
+- **Ready to merge: mino only approves.** mino's preferred way to receive any change to one of his repos: you do the whole job and hand back a PR he only has to review and merge. Branch, implement, verify (tests, builds, a secret scan before every push, screenshots for anything visual), commit, push the feature branch, open the PR with what changed, what you verified and what is left for him, update the project's vault note, link the PR in T3. Do not stop to ask between those steps. Standing permission covers pushing feature branches and opening PRs on mino's own repos (all under `minomat180`); repos shared with others still need his OK first. Never merge, force-push, delete branches, rename a repo or change its visibility: list those at the end as his decisions. Pushes go from minomatNix (the Mac has no GitHub credentials). Background: `lessons.md`, "Ready to merge".
 - **Model.** `claude-opus-5-5` for all work, in sessions and subagents alike.
 - **Delegating.** Paste the hard constraints and the BOTTOM LINE contract into every child prompt (a child does not inherit your context). A report is a claim: spot-check it before relaying and say what you verified.
 
@@ -108,8 +109,8 @@ is the git repo (`~/Projects/vault-notes`, private `<private-vault-repo>`);
 on the Mac it is a live Syncthing copy without `.git` (`tools/vault-sync.md`).
 Commits happen on minomatNix. **On the Mac, write only to `~/vault`**; there is no other copy of the vault there.
 
-**It is organised by project.** Every project has one note in `projects/` (metvas has a
-folder) with summary, how to run it, current state per machine with the command that
+**It is organised by project.** Every project has one note in `projects/` (a large project
+may have a folder) with summary, how to run it, current state per machine with the command that
 re-checks it, decisions, and dated history at the bottom. `projects/index.md` is the
 status board for everything.
 
@@ -129,7 +130,7 @@ Index (paths relative to `~/vault/`):
 - Browser: skill `agent-chrome`; running it: `tools/agent-chrome.md`
 - Secrets: skill `vault`; background: `tools/secrets-and-vaults.md`
 - T3 Code and linked environments: `tools/t3-code.md`
-- Making a GitHub repo complete: `reference/github-repo-full-setup.md`
+- Making a GitHub repo complete: `reference/github-repo-full-setup.md`; fit for the personal site: `reference/showcase-standard.md`
 - Shared agent skills (Claude Code, both machines): `skills/`; how they are linked: `tools/agent-skills.md`
 - Unfinished work: `open-threads.md`. Ideas for later: `ideas.md`. Why the rules exist: `lessons.md`
 - Archived and deleted things (not in use): `archive/index.md`

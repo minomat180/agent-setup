@@ -26,6 +26,7 @@ shift $((OPTIND - 1))
 
 projects="${1:-$HOME/Projects}"
 notes="${VAULT:-$HOME/vault}/projects"
+[ -d "$projects" ] || { echo "no projects folder: $projects" >&2; exit 1; }
 
 find_note() {
 	local name="$1" lower
@@ -36,13 +37,16 @@ find_note() {
 	return 1
 }
 
+# Print paths under $HOME as ~/...
+t() { printf '%s' "${1/#"$HOME"/\~}"; }
+
 ours() { head -n 1 "$1" 2>/dev/null | grep -q ': agent pointer (local, not committed)$'; }
 
 tracked() { git -C "$1" ls-files --error-unmatch "$2" >/dev/null 2>&1; }
 
 write() {
 	# write <file> <content>
-	if [ "$dry" = 1 ]; then echo "  would write $1"; else printf '%s\n' "$2" > "$1"; fi
+	if [ "$dry" = 1 ]; then echo "  would write $(t "$1")"; else printf '%s\n' "$2" > "$1" && echo "  wrote   $(t "$1")"; fi
 }
 
 exclude() {
@@ -63,7 +67,7 @@ for repo in "$projects"/*/; do
 	fi
 
 	if ! rel="$(find_note "$name")"; then
-		echo "skip    $name (no note in $notes)"
+		echo "skip    $name (no note in $(t "$notes"))"
 		continue
 	fi
 	echo "repo    $name -> projects/$rel"
@@ -71,7 +75,7 @@ for repo in "$projects"/*/; do
 	if tracked "$repo" AGENTS.md; then
 		echo "  AGENTS.md is tracked by the repo, left alone"
 	elif [ -e "$repo/AGENTS.md" ] && { [ "$force" = 0 ] || ! ours "$repo/AGENTS.md"; }; then
-		echo "  AGENTS.md exists, left alone"
+		echo "  AGENTS.md exists, left alone (-f rewrites it if this script wrote it)"
 	else
 		write "$repo/AGENTS.md" "# $name: agent pointer (local, not committed)
 

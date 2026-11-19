@@ -30,7 +30,8 @@ not use it.
 
 The server runs Claude Code mostly through T3 Code and has no hooks or plugins;
 its settings only pick the theme and the model alias. Not copied:
-`settings.local.json` (per-machine permission grants), `.credentials.json`.
+`settings.local.json` (per-machine permission grants), `.credentials.json`, and
+the live Mac file's `permissions.deny` rules for one private per-repo file.
 
 ## Skills
 
@@ -41,7 +42,7 @@ keeps them current on the Mac.
 | Skill | Mac | Server | Source |
 |---|---|---|---|
 | `frontend-taste` | yes | yes | `~/vault/skills/frontend-taste` (symlink); a copy is in this repo, `skills/frontend-taste/` |
-| `agent-chrome` | yes | install with agent-chrome | [mino-shared/agent-chrome](https://github.com/mino-shared/agent-chrome), `skill/` (symlink) |
-| `vault` | yes | with agent-vault | [mino-shared/agent-vault](https://github.com/mino-shared/agent-vault) `skill/`, installed by its `install.sh` |
+| `agent-chrome` | yes | yes | [minomat180/agent-chrome](https://github.com/minomat180/agent-chrome), `skill/` (symlink) |
+| `vault` | yes | yes | [minomat180/agent-vault](https://github.com/minomat180/agent-vault) `skill/`, installed by its `install.sh` |
 | `web-search` | yes | no | see `skills/README.md` |
 | `youtube-transcript` | yes | no | see `skills/README.md` |
