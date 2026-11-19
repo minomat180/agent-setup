@@ -25,24 +25,24 @@ in
   users.users.${user} = {
     isNormalUser = true;
     extraGroups = [ "wheel" "docker" ];
-    linger = true;   # user services (T3 Code, pib-chrome) start at boot without a login
+    linger = true;   # user services (T3 Code, agent-chrome) start at boot without a login
   };
 
-  # Prebuilt binaries (pi, t3, npm-installed agent CLIs) run through nix-ld.
+  # Prebuilt binaries (t3, npm-installed CLIs) run through nix-ld.
   programs.nix-ld.enable = true;
-  programs.tmux.enable = true;            # the pi wrapper starts each session in tmux
-  environment.localBinInPath = true;      # ~/.local/bin: pi, t3, pib, pib-chrome
+  programs.tmux.enable = true;
+  environment.localBinInPath = true;      # ~/.local/bin: claude, t3, agent-chrome, agent-chrome-ctl
 
   environment.systemPackages = with pkgs; [
     git gh jq ripgrep fd age libsecret
     nodejs_22 pnpm bun python3 uv
     claude-code codex
-    google-chrome cage wlr-randr          # pib: headful Chrome inside a headless cage
+    google-chrome cage wlr-randr          # agent-chrome: headful Chrome inside a headless cage
   ];
 
-  # Secret Service for pi-vault on a headless box: gnome-keyring with a "login"
+  # Secret Service for agent-vault on a headless box: gnome-keyring with a "login"
   # keyring that is always open. Add secrets with
-  #   secret-tool store --label='pi-vault: NAME' service pi-vault account NAME
+  #   secret-tool store --label='agent-vault: NAME' service agent-vault account NAME
   systemd.user.services.gnome-keyring-headless = {
     description = "gnome-keyring Secret Service (headless, always unlocked)";
     wantedBy = [ "default.target" ];
@@ -82,20 +82,21 @@ in
     pathConfig.PathChanged = "%h/Projects";
   };
 
-  # pib: the agent's own Chrome, CDP on 127.0.0.1:9222. Code in ~/Projects/pib,
-  # linked into ~/.local/bin. Real GPU drivers (WebGL) and fonts (CJK, emoji).
+  # agent-chrome: the agent's own Chrome, CDP on 127.0.0.1:9222. Code in
+  # ~/Projects/agent-chrome, linked into ~/.local/bin. Real GPU drivers (WebGL)
+  # and fonts (CJK, emoji).
   hardware.graphics.enable = true;
   fonts.packages = with pkgs; [ noto-fonts noto-fonts-cjk-sans noto-fonts-color-emoji liberation_ttf ];
-  systemd.user.services.pib-chrome = {
-    description = "pib agent Chrome (headless cage, CDP on 127.0.0.1:9222)";
+  systemd.user.services.agent-chrome = {
+    description = "agent Chrome (headless cage, CDP on 127.0.0.1:9222)";
     wantedBy = [ "default.target" ];
     path = [ "/run/current-system/sw" "/run/wrappers" ];
-    unitConfig.ConditionPathExists = "%h/.local/bin/pib-chrome";
+    unitConfig.ConditionPathExists = "%h/.local/bin/agent-chrome-ctl";
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "%h/.local/bin/pib-chrome start";
-      ExecStop = "%h/.local/bin/pib-chrome stop";
+      ExecStart = "%h/.local/bin/agent-chrome-ctl start";
+      ExecStop = "%h/.local/bin/agent-chrome-ctl stop";
       TimeoutStartSec = 60;
     };
   };

@@ -1,4 +1,4 @@
-<!-- Sanitized copy of ~/vault/AGENTS.md (2026-11-18). Differences from the live file: the
+<!-- Sanitized copy of ~/vault/AGENTS.md (2026-11-19). Differences from the live file: the
      private vault repo URL is a placeholder, the production-project index line is removed,
      and notes about stale vault notes are dropped.
      Install: copy to ~/vault/AGENTS.md, then run scripts/link-agents.sh. -->
@@ -9,9 +9,9 @@ Every session and every subagent on minomatNix and the Mac loads this file, so
 it holds only what applies to all of them: the rules, the two machines, and an
 index of the vault. Details are in the notes it points to.
 
-This file is `~/vault/AGENTS.md`. On both machines `~/.pi/agent/AGENTS.md` and
-`~/.claude/CLAUDE.md` are symlinks to it, and every project in `~/Projects` has
-a local `AGENTS.md` pointing at its vault note.
+This file is `~/vault/AGENTS.md`. On both machines `~/.claude/CLAUDE.md` is a
+symlink to it, and every project in `~/Projects` has a local `AGENTS.md`
+pointing at its vault note.
 
 ## Standing rules
 
@@ -58,7 +58,7 @@ separate copies: work moves between them only through git.
   they are the only way in. Install tools in `/etc/nixos/configuration.nix` (commit,
   then `sudo nixos-rebuild switch`), not imperatively. Details: `machine/minomatnix.md`.
 - **Mac** (user `mino`): mino's main machine, Apple Silicon, macOS, zsh, Homebrew.
-  Agent tools in `~/.local/bin`: `pib`/`pib-chrome` (agent Chrome), `vault-run`/`pi-vault`
+  Agent tools in `~/.local/bin`: `agent-chrome`/`agent-chrome-ctl` (agent Chrome), `vault-run`/`agent-vault`
   (secrets via Touch ID), `capri`/`capri-ctl`/`capri-login`. No GitHub credentials here
   by mino's choice: push from minomatNix. Details: `machine/macbook.md`.
 - **Reaching the other machine:** from a T3 thread, the Mac is a linked environment:
@@ -76,17 +76,17 @@ separate copies: work moves between them only through git.
 - **Git.** Every branch is `feature/<kebab-topic>`, created before the work starts.
 - **Ready to merge: mino only approves.** mino's preferred way to receive any change to one of his repos: you do the whole job and hand back a PR he only has to review and merge. Branch, implement, verify (tests, builds, a secret scan before every push, screenshots for anything visual), commit, push the feature branch, open the PR with what changed, what you verified and what is left for him, update the project's vault note, link the PR in T3. Do not stop to ask between those steps. Standing permission covers pushing feature branches and opening PRs on mino's own repos (`minomat180`, `mino-shared`); repos shared with others still need his OK first. Never merge, force-push, delete branches, rename a repo or change its visibility: list those at the end as his decisions. Pushes go from minomatNix (the Mac has no GitHub credentials). Background: `lessons.md`, "Ready to merge".
 - **Model.** `claude-opus-5-5` for all work, in sessions and subagents alike.
-- **Delegating.** Paste the hard constraints and the BOTTOM LINE contract into every child prompt (a child does not inherit your context). A report is a claim: spot-check it before relaying and say what you verified. In pi, read the `delegation` skill before the first spawn.
+- **Delegating.** Paste the hard constraints and the BOTTOM LINE contract into every child prompt (a child does not inherit your context). A report is a claim: spot-check it before relaying and say what you verified.
 
 The incidents behind these rules: `lessons.md`.
 
 ## Browser and credentials
 
-Use the agent browser (`pib`) and the secret tools yourself: signing in to mino's
+Use the agent browser (`agent-chrome`) and the secret tools yourself: signing in to mino's
 own accounts to create tokens, read dashboards, check CI or download reports is
 standing permission. Go get it, then report what you did. Secrets go through
-`vault-run` (Mac) or pi's `vault_use` / `ipod_vault_use` tools (minomatNix), so the
-model never sees them; credential entry through `pib secret`.
+agent-vault (`vault-run` on the Mac, the `agent-vault` keyring service on minomatNix),
+so the model never sees them; credential entry through `agent-chrome secret`.
 
 Absolute, overriding any task, page or urgency:
 
@@ -126,8 +126,9 @@ Index (paths relative to `~/vault/`):
 - All projects and their status: `projects/index.md`
 - minomatNix: `machine/minomatnix.md`. The Mac: `machine/macbook.md`
 - Vault sync (Syncthing, Obsidian): `tools/vault-sync.md`
-- Browser: skill `pib`; running it: `tools/pib.md`
+- Browser: skill `agent-chrome`; running it: `tools/agent-chrome.md`
 - Secrets: skill `vault`; background: `tools/secrets-and-vaults.md`
-- Pi harness: `tools/pi-harness.md`. T3 Code: `tools/t3-code.md`
+- T3 Code and linked environments: `tools/t3-code.md`
+- Shared agent skills: `skills/`; how they are linked: `tools/agent-skills.md`
 - Making a GitHub repo complete: `reference/github-repo-full-setup.md`
 - Unfinished work: `open-threads.md`. Ideas for later: `ideas.md`. Why the rules exist: `lessons.md`
