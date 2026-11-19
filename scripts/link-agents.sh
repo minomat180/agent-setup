@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Point every agent's global instructions at the one shared file in the vault:
-#   ~/.pi/agent/AGENTS.md  -> ~/vault/AGENTS.md
+# Point Claude Code's global instructions at the one shared file in the vault:
 #   ~/.claude/CLAUDE.md    -> ~/vault/AGENTS.md
 # Works on Linux and macOS. Idempotent. An existing regular file is moved aside
 # to <name>.bak-<timestamp>, never deleted.
@@ -23,7 +22,7 @@ if [ ! -e "$target" ]; then
 fi
 
 stamp="$(date +%Y%m%d-%H%M%S)"
-for link in "$HOME/.pi/agent/AGENTS.md" "$HOME/.claude/CLAUDE.md"; do
+for link in "$HOME/.claude/CLAUDE.md"; do
 	run mkdir -p "$(dirname "$link")"
 	if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
 		echo "ok      $link"

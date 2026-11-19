@@ -8,7 +8,7 @@ One note per project. Each note has: summary, stack and layout, how to run it,
 current state with the command that re-checks it, decisions and gotchas,
 related notes, history. Every repo in `~/Projects` (both machines) has a
 git-excluded `AGENTS.md` pointing at its note here (`scripts/project-pointers.sh`
-in pi-dotfiles creates them).
+in agent-setup creates them).
 
 `~/Projects` exists on the server and on the Mac as separate copies: work moves
 between them only through git. Each note's "Current state" says which machine
@@ -20,8 +20,9 @@ Status values: `active`, `paused`, `archived`.
 
 | Note | Status | What |
 |---|---|---|
-| [[pi-dotfiles]] | active | This setup: shared AGENTS.md, vault skeleton, per-machine config. |
-| [[pib]] | active | Agent browser CLI (CDP). |
+| [[agent-setup]] | active | This setup: shared AGENTS.md, vault skeleton, per-machine config. |
+| [[agent-chrome]] | active | Agent browser CLI (CDP). |
+| [[agent-vault]] | active | Secrets for agents, read with approval. |
 
 ## Utilities
 

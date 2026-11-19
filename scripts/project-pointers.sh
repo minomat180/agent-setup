@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Give every git repo in ~/Projects a local, git-excluded pointer to its vault note:
 #   <repo>/AGENTS.md  "Project memory and status: ~/vault/projects/<note>.md ..."
-#   <repo>/CLAUDE.md  "@AGENTS.md"  (Claude Code reads CLAUDE.md, pi reads AGENTS.md)
+#   <repo>/CLAUDE.md  "@AGENTS.md"  (Claude Code reads CLAUDE.md, which imports AGENTS.md)
 # and add both to <repo>/.git/info/exclude so they are never committed.
 #
 # The note is found as ~/vault/projects/<repo>.md, then the lower-case name, then

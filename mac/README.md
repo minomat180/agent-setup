@@ -13,26 +13,30 @@ What is known from the 2026-11-18 snapshot; a full `brew list` was not captured.
 brew install syncthing
 brew services start syncthing          # the vault copy, see "Vault" below
 brew install colima                    # containers (service installed, not running)
-npm install -g @earendil-works/pi-coding-agent   # pi; on the Mac /opt/homebrew/bin/pi -> ~/.pi/agent/bin/pi
+npm install -g cc-safety-net pi-lens   # used by the Claude Code settings (claude/README.md)
 # Claude Code: /opt/homebrew/bin/claude
-# T3 Code: the desktop app, with pi added as a provider; its CLI is ~/.t3/bin/t3
+# T3 Code: the desktop app, with Claude Code as its provider; its CLI is ~/.t3/bin/t3
 ```
 
 Then, from a checkout of this repo:
 
 ```bash
-mkdir -p ~/vault ~/.pi/agent ~/.claude
+mkdir -p ~/vault ~/.claude/skills ~/.local/bin
 cp shared/AGENTS.md ~/vault/AGENTS.md   # skip if Syncthing already brought it
 scripts/link-agents.sh
-cp pi/settings.mac.json ~/.pi/agent/settings.json
-cp pi/mcp-adapter.json ~/.pi/agent/mcp-adapter.json
 cp claude/settings.mac.json ~/.claude/settings.json
-cp -R skills/delegation ~/.pi/agent/skills/
-cp -R skills/vault skills/frontend-taste ~/.claude/skills/
+ln -s ~/vault/skills/frontend-taste ~/.claude/skills/frontend-taste
 scripts/project-pointers.sh
 ```
 
-Log in again: `pi` then `/login`; `claude` and its login flow.
+Then clone [agent-chrome](https://github.com/mino-shared/agent-chrome) and
+[agent-vault](https://github.com/mino-shared/agent-vault) into `~/Projects`:
+link agent-chrome's commands (table below) and its skill
+(`ln -s ~/Projects/agent-chrome/skill ~/.claude/skills/agent-chrome`), and run
+agent-vault's `./install.sh` (builds the Touch ID helper, links `agent-vault`
+and `vault-run`, installs the `vault` skill).
+
+Log in again: `claude` and its login flow.
 
 ## Vault
 
@@ -47,9 +51,9 @@ there; commits happen on the server.
 
 | Tool | What | Source |
 |---|---|---|
-| `pib`, `pib-chrome` | Agent browser CLI and the agent Chrome it drives | symlinks into [mino-shared/pib](https://github.com/mino-shared/pib) `bin/` (Mac branch `feature/macos`) |
-| `pi-vault` | Store and list secrets in the login keychain; every read asks for Touch ID | symlink into [mino-shared/pi-vault](https://github.com/mino-shared/pi-vault) `macos/pi-vault-keychain` (macOS branch not pushed yet) |
-| `vault-run` | Run one command with one secret in `$PI_VAULT_SECRET`, output redacted | small standalone script on the Mac, not in any repo yet |
+| `agent-chrome`, `agent-chrome-ctl` | Agent browser CLI and the agent Chrome it drives | symlinks into [mino-shared/agent-chrome](https://github.com/mino-shared/agent-chrome) `bin/` (Mac branch `feature/macos`) |
+| `agent-vault` | Store and list secrets in the login keychain (service `agent-vault`); every read asks for Touch ID | symlink into [mino-shared/agent-vault](https://github.com/mino-shared/agent-vault) `macos/` (its `install.sh`) |
+| `vault-run` | Run one command with one secret in `$AGENT_VAULT_SECRET`, output redacted | symlink into agent-vault `bin/` (its `install.sh`) |
 | `capri`, `capri-ctl`, `capri-login` | Capri desktop overlay for agent activity | symlinks into capri-desktop (separate private repo; `linux/bin/`, `macos/bin/`) |
 | `t3` | T3 Code CLI | symlink to `~/.t3/bin/t3` |
 | `tailscale` | wrapper for the Tailscale app's CLI | small local script |

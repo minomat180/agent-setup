@@ -1,6 +1,6 @@
 # Security policy
 
-Please report vulnerabilities privately through [GitHub Security Advisories](https://github.com/mino-shared/pi-dotfiles/security/advisories/new) rather than a public issue.
+Please report vulnerabilities privately through [GitHub Security Advisories](https://github.com/mino-shared/agent-setup/security/advisories/new) rather than a public issue.
 
 This repo is configuration only. It must never contain secrets, tokens, auth
 files, hostnames or addresses of the machines, Syncthing device IDs, or email

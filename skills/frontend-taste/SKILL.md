@@ -99,7 +99,7 @@ version:
 
 1. Build.
 2. **Look at it.** Render and screenshot at desktop and phone width with whatever is available
-   (T3 preview tools when the request is browser work, `pib`/`pib-chrome`, or headless Chrome:
+   (T3 preview tools when the request is browser work, `agent-chrome`/`agent-chrome-ctl`, or headless Chrome:
    `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --screenshot=out.png --window-size=1440,900 file:///abs/path.html`).
    Then read the screenshots. Code that "should look fine" is not checked.
 3. **Critique against this file:** go through section 1's left column and section 3 and list every

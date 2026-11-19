@@ -1,7 +1,7 @@
 # Contributing
 
 This repo describes one person's agent setup (a NixOS server and a Mac sharing
-a markdown vault, with pi, Claude Code and T3 Code). It is not maintained as a
+a markdown vault, with Claude Code and T3 Code). It is not maintained as a
 general-purpose project. Issues and PRs are welcome but may sit unaddressed.
 
 If you fork it: `shared/AGENTS.md` and the machine notes describe mino's
